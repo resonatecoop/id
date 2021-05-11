@@ -19,10 +19,12 @@ type ServiceInterface interface {
 	GetRoutes() []routes.Route
 	RegisterRoutes(router *mux.Router, prefix string)
 	ClientExists(clientID string) bool
+	DeleteClient(clientID string, oauthUser *models.OauthUser) error
 	FindClientByClientID(clientID string) (*models.OauthClient, error)
+	FindClientsByUserId(oauthUser *models.OauthUser) ([]models.OauthClient, error)
 	FindClientByApplicationURL(applicationURL string) (*models.OauthClient, error)
-	CreateClient(clientID, secret, redirectURI, applicationName, applicationHostname, applicationURL string) (*models.OauthClient, error)
-	CreateClientTx(tx *gorm.DB, clientID, secret, redirectURI, applicationName, applicationHostname, applicationURL string) (*models.OauthClient, error)
+	CreateClient(oauthUser *models.OauthUser, clientID, secret, redirectURI, applicationName, applicationHostname, applicationURL string) (*models.OauthClient, error)
+	CreateClientTx(tx *gorm.DB, oauthUser *models.OauthUser, clientID, secret, redirectURI, applicationName, applicationHostname, applicationURL string) (*models.OauthClient, error)
 	AuthClient(clientID, secret string) (*models.OauthClient, error)
 	GetValidEmailToken(token string) (*models.EmailTokenModel, string, error)
 	ClearExpiredEmailTokens() error

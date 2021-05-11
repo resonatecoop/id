@@ -2,6 +2,8 @@ package models
 
 import (
 	"database/sql"
+	"gopkg.in/guregu/null.v3"
+	"strings"
 	"time"
 
 	"github.com/RichardKnop/go-oauth2-server/util"
@@ -13,12 +15,14 @@ import (
 // OauthClient ...
 type OauthClient struct {
 	MyGormModel
-	Key                 string         `sql:"type:varchar(254);unique;not null"`
-	Secret              string         `sql:"type:varchar(60);not null"`
-	RedirectURI         sql.NullString `sql:"type:varchar(200)"`
-	ApplicationName     sql.NullString `sql:"type:varchar(200)"`
-	ApplicationHostname sql.NullString `sql:"type:varchar(200)"`
-	ApplicationURL      sql.NullString `sql:"type:varchar(200)"`
+	Key                 string      `json:"key,omitempty" sql:"type:varchar(254);unique;not null"`
+	Secret              string      `json:"secret,omitempty" sql:"type:varchar(60);not null"`
+	UserID              null.String `json:"userId,omitempty,string" sql:"index"`
+	RedirectURI         null.String `json:"redirectUri,omitempty,string" sql:"type:varchar(200)"`
+	ApplicationName     null.String `json:"applicationName,omitempty,string" sql:"type:varchar(200)"`
+	ApplicationHostname null.String `json:"applicationHostname,omitempty,string" sql:"type:varchar(200)"`
+	ApplicationURL      null.String `json:"applicationUrl,omitempty,string" sql:"type:varchar(200)"`
+	Active              bool        `json:"active" sql:"default:false;not null"`
 }
 
 // TableName specifies table name
@@ -121,6 +125,36 @@ func (ac *OauthAuthorizationCode) TableName() string {
 // TableName specifies table name
 func (ac *EmailTokenModel) TableName() string {
 	return "oauth_email_tokens"
+}
+
+// NewOauthClient creates new OauthClient instance
+func NewOauthClient(
+	user *OauthUser,
+	key string,
+	secret string,
+	redirectURI string,
+	applicationName string,
+	applicationHostname string,
+	applicationURL string,
+	active bool,
+) *OauthClient {
+	oauthClient := &OauthClient{
+		MyGormModel: MyGormModel{
+			ID:        uuid.New(),
+			CreatedAt: time.Now().UTC(),
+		},
+		Key:                 key,
+		Active:              active,
+		Secret:              secret,
+		RedirectURI:         null.StringFrom(redirectURI),
+		ApplicationName:     null.StringFrom(applicationName),
+		ApplicationHostname: null.StringFrom(strings.ToLower(applicationHostname)),
+		ApplicationURL:      null.StringFrom(strings.ToLower(applicationURL)),
+	}
+	if user != nil {
+		oauthClient.UserID = null.StringFrom(string(user.ID))
+	}
+	return oauthClient
 }
 
 // NewEmailToken creates new OauthEmailToken instance
