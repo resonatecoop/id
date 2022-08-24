@@ -1,4 +1,17 @@
 {
+  "Hostname": "id.resonate.localhost",
+  "Clients": [
+    {
+      "ConnectUrl": "https://stream.resonate.localhost/api/v3/user/connect/resonate",
+      "Name": "Player",
+      "Description": "stream.resonate.localhost"
+    },
+    {
+      "ConnectUrl": "https://dash.resonate.localhost/api/user/connect/resonate",
+      "Name": "Dashboard",
+      "Description": "dash.resonate.localhost"
+    }
+  ],
   "CSRF": {
     "Key": "my-secure-csrf-key",
     "Origins": "upload.resonate.localhost,beta.resonate.localhost"
@@ -9,28 +22,63 @@
     "Domain": "sandboxxxxxxx.mailgun.org"
   },
   "Database": {
-    "Type": "postgres",
-    "Host": "localhost",
-    "Port": 5432,
-    "User": "go_oauth2_server",
-    "Password": "",
-    "DatabaseName": "go_oauth2_server",
+    "PSN": "postgres://resonate_dev_user:password@localhost:5432/resonate_dev",
     "MaxIdleConns": 5,
     "MaxOpenConns": 5
-  },
-  "Database2": {
-    "Type": "mysql",
-    "Host": "localhost",
-    "Port": 3306,
-    "User": "go_oauth2_server",
-    "Password": "",
-    "DatabaseName": "resonate_is"
   },
   "Oauth": {
     "AccessTokenLifetime": 3600,
     "RefreshTokenLifetime": 1209600,
     "AuthCodeLifetime": 3600
   },
+  "Stripe": {
+    "WebHookSecret": "whsec_",
+    "Domain": "id.resonate.localhost",
+    "Secret": "sk_",
+    "Token": "pk_",
+    "ListenerSubscription": {
+      "ID": "prod_",
+      "PriceID": "price_"
+    },
+    "ArtistMembership": {
+      "ID": "prod_",
+      "PriceID": "price_"
+    },
+    "LabelMembership": {
+      "ID": "prod_",
+      "PriceID": "price_"
+    },
+    "SupporterShares": {
+      "ID": "prod_",
+      "PriceID": "price_"
+    },
+    "StreamCredit50": {
+      "ID": "prod_",
+      "PriceID": "price_"
+    },
+    "StreamCredit20": {
+      "ID": "prod_",
+      "PriceID": "price_"
+    },
+    "StreamCredit10": {
+      "ID": "prod_",
+      "PriceID": "price_"
+    },
+    "StreamCredit5": {
+      "ID": "prod_",
+      "PriceID": "price_"
+    }
+  },
+  "ApplicationURL": "https://stream.resonate.localhost",
+  "Origins": [
+    "dash.resonate.localhost",
+    "stream.resonate.localhost"
+  ],
+  "EmailTokenSecretKey": "very-secret",
+  "StaticURL": "https://dash.resonate.localhost",
+  "AppURL": "https://stream.resonate.localhost",
+  "UserAPIHostname": "api.resonate.localhost",
+  "UserAPIPort": ":443",
   "Session": {
     "Secret": "test_secret",
     "Path": "/",
