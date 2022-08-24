@@ -130,7 +130,7 @@ func (s *Service) account(w http.ResponseWriter, r *http.Request) {
 			credits = int64(casted)
 		}
 
-		if r.Form.Get("shares") != "" {
+		if r.Form.Get("shares") != "" && (membership == true || user.Member == true) {
 			// process supporter shares
 			casted, err := strconv.ParseInt(r.Form.Get("shares"), 10, 64)
 
