@@ -63,7 +63,7 @@ go install .
 Run the server
 
 ```
-go-oauth2-server runserver
+go run go-oauth2-server.go runserver
 ```
 
 ## Deploy
