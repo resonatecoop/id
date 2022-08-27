@@ -820,10 +820,12 @@ class ProfileForm extends Component {
             ${this.renderRoleSwitcher.bind(this)()}
           </div>
             ${this.local.role === 'artist'
-              ? <div>
-                  <a href={newReleaseSubmissionFormUrl}>
-                    New Release Submission Form
-                  </a>
+              ? <div class="relative flex items-center">
+                  <h3 class="lh-title f3 fw1">
+                      <a href={newReleaseSubmissionFormUrl}>
+                        New Release Submission Form
+                      </a>
+                  </h3>
               </div>
               : ''}
           <form ${attrs}>
