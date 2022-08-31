@@ -23,8 +23,6 @@ const ProfileSwitcher = require('../../components/forms/profileSwitcher')
 
 const SwaggerClient = require('swagger-client')
 
-const newReleaseSubmissionFormUrl = 'https://forms.gle/VZok9gA1FDzznewW9'
-
 // ProfileForm class
 class ProfileForm extends Component {
   constructor (id, state, emit) {
@@ -819,15 +817,6 @@ class ProfileForm extends Component {
           <div>
             ${this.renderRoleSwitcher.bind(this)()}
           </div>
-            ${this.local.role === 'artist'
-              ? <div class="relative flex items-center">
-                  <h3 class="lh-title f3 fw1">
-                      <a href={newReleaseSubmissionFormUrl}>
-                        New Release Submission Form
-                      </a>
-                  </h3>
-              </div>
-              : ''}
           <form ${attrs}>
             ${Object.entries(elements)
               .map(([name, el]) => {
@@ -837,6 +826,16 @@ class ProfileForm extends Component {
 
             ${submitButton()}
           </form>
+          ${this.local.role === 'artist'
+            ? <div class="relative flex items-center">
+                    <h4>
+                    <br/>
+                    <a href="https://forms.gle/VZok9gA1FDzznewW9">
+                      New Release Submission Form
+                    </a>
+                </h4>
+            </div>
+            : ''}
         </div>
       </div>
     `
