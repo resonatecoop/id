@@ -110,6 +110,9 @@ class UserMenu extends Nanocomponent {
         </li>
         <li class="bb bw b--mid-gray b--mid-gray--light b--near-black--dark mt3 mb2" role="separator"></li>
         <li class="mb1" role="menuitem">
+          <a class="link db pv2 pl3" href="/profile">Profile</a>
+        </li>
+        <li class="mb1" role="menuitem">
           <a class="link db pv2 pl3" href="/account">Update your account</a>
         </li>
         <li class="mb1" role="menuitem">
