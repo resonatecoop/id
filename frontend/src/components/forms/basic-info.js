@@ -826,16 +826,14 @@ class ProfileForm extends Component {
 
             ${submitButton()}
           </form>
-          ${this.local.role === 'artist'
-            ? <div class="relative flex items-center">
-                <h4>
-                  <br/>
-                  <a href="https://forms.gle/VZok9gA1FDzznewW9">
-                    New Release Submission Form
-                  </a>
-                </h4>
-              </div>
-            : ''}
+          <div class="relative flex items-center">
+            <h4>
+              <br/>
+              <a href="https://forms.gle/VZok9gA1FDzznewW9">
+                New Release Submission Form
+              </a>
+            </h4>
+          </div>
         </div>
       </div>
     `
