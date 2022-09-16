@@ -801,17 +801,6 @@ class ProfileForm extends Component {
       `
     }
 
-    const newReleaseSubmissionForm = this.local.role === 'artist'
-      ? <div class="relative flex items-center">
-        <h4>
-          <br />
-          <a href="https://forms.gle/VZok9gA1FDzznewW9">
-            New Release Submission Form
-          </a>
-        </h4>
-      </div>
-      : '';
-
     return html`
       <div class="base-form flex flex-column">
         <div class=${this.local.sticky ? 'sticky z-2' : ''} style=${this.local.sticky ? 'top:3rem' : ''}>
@@ -837,7 +826,14 @@ class ProfileForm extends Component {
 
             ${submitButton()}
           </form>
-          ${newReleaseSubmissionForm}
+          <div class="relative flex items-center">
+            <h4>
+              <br/>
+              <a href="https://forms.gle/VZok9gA1FDzznewW9">
+                New Release Submission Form
+              </a>
+            </h4>
+          </div>
         </div>
       </div>
     `
