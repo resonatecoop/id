@@ -92,7 +92,7 @@ func (s *Service) SendEmailTokenTx(
 
 // CreateEmailToken ...
 func (s *Service) CreateEmailToken(email string) (*model.EmailToken, error) {
-	expiresIn := 10 * time.Minute // 10 minutes
+	expiresIn := 30 * time.Minute // 30 minutes
 
 	emailToken := model.NewOauthEmailToken(&expiresIn)
 
