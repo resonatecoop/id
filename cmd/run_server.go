@@ -55,7 +55,7 @@ func RunServer(configBackend string) error {
 
 	CSRF := csrf.Protect(
 		[]byte(cnf.CSRF.Key),
-		csrf.SameSite(csrf.SameSiteStrictMode),
+		csrf.SameSite(csrf.SameSiteLaxMode),
 		csrf.TrustedOrigins([]string{cnf.CSRF.Origins}),
 	)
 
