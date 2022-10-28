@@ -14,7 +14,7 @@ require (
 	github.com/go-openapi/strfmt v0.20.1
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/context v1.1.1
-	github.com/gorilla/csrf v1.7.0
+	github.com/gorilla/csrf v1.7.1
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/sessions v1.2.1
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.5.0 // indirect
