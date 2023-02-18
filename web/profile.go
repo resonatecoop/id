@@ -20,8 +20,6 @@ func (s *Service) profileForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("X-CSRF-Token", csrf.Token(r))
-
 	if !isUserAccountComplete {
 		err = sessionService.SetFlashMessage(&session.Flash{
 			Type:    "Info",
@@ -35,6 +33,8 @@ func (s *Service) profileForm(w http.ResponseWriter, r *http.Request) {
 		redirectWithQueryString("/web/account", query, w, r)
 		return
 	}
+
+	w.Header().Set("X-CSRF-Token", csrf.Token(r))
 
 	// Render the template
 	flash, _ := sessionService.GetFlashMessage()
