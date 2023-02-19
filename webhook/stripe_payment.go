@@ -238,7 +238,7 @@ func (s *Service) stripePayment(w http.ResponseWriter, r *http.Request) {
 
 // processMembership
 func (s *Service) processMembership(customerEmail, subscriptionID, productID string) error {
-	user, err := s.oauthService.FindUserByUsername(customerEmail)
+	_, err := s.oauthService.FindUserByUsername(customerEmail)
 
 	if err != nil {
 		log.ERROR.Print(err)
