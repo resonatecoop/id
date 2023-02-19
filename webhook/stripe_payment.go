@@ -150,6 +150,7 @@ func (s *Service) stripePayment(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		/* BROKEN!
 		if session.Metadata["shares"] != "" {
 			log.INFO.Printf("Number of shares: %s", session.Metadata["shares"])
 
@@ -182,6 +183,7 @@ func (s *Service) stripePayment(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
+		*/
 
 		if session.Metadata["credits"] != "" {
 			log.INFO.Printf("Number of credits: %s", session.Metadata["credits"])
@@ -255,10 +257,12 @@ func (s *Service) processMembership(customerEmail, subscriptionID, productID str
 	}
 
 	if templateName != "" {
+		/* BROKEN!
 		if err = s.AddMembership(user, productID, subscriptionID); err != nil {
 			log.ERROR.Print(err)
 			return err
 		}
+		*/
 
 		if err = s.GrantMemberStatus(customerEmail, true); err != nil {
 			log.ERROR.Print(err)
