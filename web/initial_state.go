@@ -7,6 +7,11 @@ import (
 	"github.com/resonatecoop/user-api/model"
 )
 
+// Usergroup public
+type UserGroup struct {
+	DisplayName string `json:"displayName"`
+}
+
 // Profile user public profile
 type Profile struct {
 	ID          string `json:"id"`
@@ -18,12 +23,12 @@ type Profile struct {
 	// FullName               string                                 `json:"fullName"`
 	// FirstName              string                                 `json:"firstName"`
 	// LastName               string                                 `json:"lastName"`
-	Country                string                                 `json:"country"`
-	NewsletterNotification bool                                   `json:"newsletterNotification"`
-	EmailConfirmed         bool                                   `json:"emailConfirmed"`
-	Member                 bool                                   `json:"member"`
-	Complete               bool                                   `json:"complete"`
-	Usergroups             []*models.UserUserGroupPrivateResponse `json:"usergroups"`
+	Country                string      `json:"country"`
+	NewsletterNotification bool        `json:"newsletterNotification"`
+	EmailConfirmed         bool        `json:"emailConfirmed"`
+	Member                 bool        `json:"member"`
+	Complete               bool        `json:"complete"`
+	Usergroups             []UserGroup `json:"usergroups"`
 }
 
 // NewProfile
@@ -40,6 +45,14 @@ func NewProfile(
 		displayName = usergroups[0].DisplayName
 	}
 
+	var usergroupList []UserGroup
+
+	for i := range usergroups {
+		usergroupList = append(usergroupList, UserGroup{
+			DisplayName: usergroups[i].DisplayName,
+		})
+	}
+
 	return &Profile{
 		ID:                     user.ID.String(),
 		Complete:               isUserAccountComplete,
@@ -52,7 +65,7 @@ func NewProfile(
 		LegacyID:               user.LegacyID,
 		Member:                 user.Member,
 		NewsletterNotification: user.NewsletterNotification,
-		Usergroups:             usergroups,
+		Usergroups:             usergroupList,
 	}
 }
 
