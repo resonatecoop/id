@@ -11,6 +11,7 @@ import (
 type UserGroup struct {
 	ID          string `json:"id"`
 	DisplayName string `json:"displayName"`
+	Avatar      string `json:"avatar"`
 }
 
 // Profile user public profile
@@ -52,6 +53,7 @@ func NewProfile(
 		usergroupList = append(usergroupList, UserGroup{
 			ID:          usergroups[i].ID,
 			DisplayName: usergroups[i].DisplayName,
+			Avatar:      usergroups[i].Avatar,
 		})
 	}
 
