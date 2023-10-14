@@ -9,6 +9,7 @@ import (
 
 // Usergroup public
 type UserGroup struct {
+	ID          string `json:"id"`
 	DisplayName string `json:"displayName"`
 }
 
@@ -49,6 +50,7 @@ func NewProfile(
 
 	for i := range usergroups {
 		usergroupList = append(usergroupList, UserGroup{
+			ID:          usergroups[i].ID,
 			DisplayName: usergroups[i].DisplayName,
 		})
 	}
