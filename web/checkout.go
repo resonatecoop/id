@@ -148,13 +148,22 @@ func (s *Service) checkoutForm(w http.ResponseWriter, r *http.Request) {
 		string(initialState),
 	)
 
+	var usergroupList []UserGroup
+
+	for i := range usergroups.Usergroup {
+		usergroupList = append(usergroupList, UserGroup{
+			ID:          usergroups.Usergroup[i].ID,
+			DisplayName: usergroups.Usergroup[i].DisplayName,
+		})
+	}
+
 	profile := &Profile{
 		Email:          user.Username,
 		LegacyID:       user.LegacyID,
 		Country:        user.Country,
 		EmailConfirmed: user.EmailConfirmed,
 		Complete:       isUserAccountComplete,
-		Usergroups:     usergroups.Usergroup,
+		Usergroups:     usergroupList,
 	}
 
 	if len(usergroups.Usergroup) > 0 {
