@@ -12,6 +12,7 @@ type UserGroup struct {
 	ID          string `json:"id"`
 	DisplayName string `json:"displayName"`
 	Avatar      string `json:"avatar"`
+	Banner      string `json:"banner"`
 }
 
 // Profile user public profile
@@ -54,6 +55,7 @@ func NewProfile(
 			ID:          usergroups[i].ID,
 			DisplayName: usergroups[i].DisplayName,
 			Avatar:      usergroups[i].Avatar,
+			Banner:      usergroups[i].Banner,
 		})
 	}
 
