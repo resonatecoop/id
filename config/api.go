@@ -9,22 +9,30 @@ import (
 )
 
 var (
-	insecureSkipVerify = true // TODO keep this only for development
-	basepath           = ""
-	schemes            = []string{}
+	basepath = ""
+	schemes  = []string{}
 )
 
 // NewAPIClient
-func NewAPIClient(address, port string) *apiclient.ResonateServiceDocumentationUser {
+func NewAPIClient(config UserAPIConfig) *apiclient.ResonateServiceDocumentationUser {
+	if config.Hostname == "" {
+		panic("user api hostname not set")
+	}
+
 	httpClient, err := httptransport.TLSClient(httptransport.TLSClientOptions{
-		InsecureSkipVerify: insecureSkipVerify,
+		InsecureSkipVerify: config.InsecureSkipVerify,
 	})
 
 	if err != nil {
 		panic(err)
 	}
 
-	hostname := fmt.Sprintf("%s%s", address, port)
+	hostname := config.Hostname
+
+	if config.Port != "" {
+		hostname = fmt.Sprintf("%s:%s", config.Hostname, config.Port)
+	}
+
 	transport := httptransport.NewWithClient(hostname, basepath, schemes, httpClient)
 
 	client := apiclient.New(transport, strfmt.Default)

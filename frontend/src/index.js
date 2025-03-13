@@ -85,6 +85,7 @@ app.use((state, emitter) => {
 
       state.profile.nickname = userData.nickname
       state.profile.avatar = userData.avatar || {}
+      state.profile.usergroups = userData.usergroups || []
 
       emitter.emit(state.events.RENDER)
     } catch (err) {

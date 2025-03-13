@@ -1,0 +1,79 @@
+extends layout
+
+block header
+  include header
+
+block content
+  :go:func
+    Authorize(
+      isDevelopment bool,
+      path,
+      query,
+      csrfField,
+      title,
+      description string,
+      profile *Profile,
+      flash *session.Flash,
+      fragment string,
+      state *InitialState,
+      responseType string
+    )
+
+  if flash.Message != ""
+    .sticky.top-0.z-999.mb3.flex(class='')
+      p.ma0.pa3.w-100 #{flash.Message}
+      if !state.IsUserAccountComplete
+        p.ma0.pa3.tr.w-100
+          a.db.ph3(href='../web/logout') Log out
+
+  .flex.flex-column.flex-auto.items-center.justify-center.min-vh-100.mh3.pt6.pb6
+    .flex.flex-column.w-100.w-auto-l.ph4.pt4.pb3
+      h2.f3.fw1.mt3.near-black.near-black--light.light-gray--dark.lh-title Continue to #{state.ApplicationName}
+
+      if responseType == "token"
+        p
+          | How long do you want to authorize 
+          b=state.ApplicationName
+          |  for?
+        .flex.w-100
+          .flex.items-center.flex-auto
+            input#hour(tabindex='-1' type='radio' name='lifetime' value='3600')
+            label.flex.flex-auto.items-center.justify-center.w-100(tabindex='0' for='hour')
+              .pv3.flex.justify-center.w-100.flex-auto
+                svg.icon.icon-circle.icon--sm.fill-white(viewBox='0 0 16 16')
+                  use(xlink:href='#icon-circle')
+              .pv3.flex.w-100.flex-auto 1 hour
+          .flex.items-center.flex-auto
+            input#day(tabindex='-1' type='radio' name='lifetime' value='86400')
+            label.flex.flex-auto.items-center.justify-center.w-100(tabindex='0' for='day')
+              .pv3.flex.justify-center.w-100.flex-auto
+                svg.icon.icon-circle.icon--sm.fill-white(viewBox='0 0 16 16')
+                  use(xlink:href='#icon-circle')
+              .pv3.flex.w-100.flex-auto 1 day
+          .flex.items-center.flex-auto
+            input#week(tabindex='-1' type='radio' name='lifetime' value='604800' checked='')
+            label.flex.flex-auto.items-center.justify-center.w-100(tabindex='0' for='week')
+              .pv3.flex.justify-center.w-100.flex-auto
+                svg.icon.icon-circle.icon--sm.fill-white(viewBox='0 0 16 16')
+                  use(xlink:href='#icon-circle')
+              .pv3.flex.w-100.flex-auto 1 week
+
+      .flex.flex-column.flex-auto
+        form.flex.flex-column.flex-auto.ma0.pa0(action='' method='POST')
+          !=csrfField
+          p.lh-copy
+            | Logging in as 
+            b
+              if profile.DisplayName != ""
+                =profile.DisplayName
+              else
+                =profile.Email
+          .flex
+            .mr3
+              input.bg-white.black.ba.bw.b--dark-gray.f5.b.pv3.ph3.grow(name='allow' type='submit' value='Finish Login')
+            div
+              input.bg-white.black.f5.bn.b.pv3.ph3.grow(name='deny' type='submit' value='Cancel')
+
+
+block footer
+  include footer

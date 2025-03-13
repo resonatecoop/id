@@ -195,7 +195,7 @@ func (s *Service) SetFlashMessage(flash *Flash) error {
 }
 
 // GetFlashMessage returns the first flash message
-func (s *Service) GetFlashMessage() (interface{}, error) {
+func (s *Service) GetFlashMessage() (*Flash, error) {
 	// Make sure StartSession has been called
 	if s.session == nil {
 		return nil, ErrSessonNotStarted
@@ -212,7 +212,7 @@ func (s *Service) GetFlashMessage() (interface{}, error) {
 	}
 
 	// No flash messages in the stack
-	return nil, nil
+	return &Flash{}, nil
 }
 
 // Close stops any running services

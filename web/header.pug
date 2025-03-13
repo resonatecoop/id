@@ -1,0 +1,107 @@
+header#header.bg-white.black.bg-white--light.black--light.bg-black--dark.white--dark.white.fixed.sticky-l.left-0.top-0-l.bottom-0.right-0.w-100.z-9999.flex.items-center.bt.bt-0-l.bb-l.bw.b--mid-gray.b--mid-gray--light.b--near-black--dark(role='banner' style='height:3rem;height:calc(3rem - 1px);')
+  h1.ma0.pa0.h-100
+    a.link.flex.items-center.flex-shrink-0.h-100.ph2.ml2.overflow-hidden(href='/' title='Resonate')
+      svg.icon.icon-logo-wordmark.icon--sm(viewBox='0 0 16 16')
+        use(xlink:href='#icon-logo-wordmark')
+  nav.flex-l.flex-auto-l.w-50-l.relative.dropdown-navigation--focus(role='navigation' aria-label='Main navigation')
+    ul.list.ma0.pa0.bg-white.bg-white--light.bg-black--dark.bg-transparent-l.fixed.w-100.top-0.left-0.flex.flex-auto.w-100.relative-l.flex-l.bb.bb-0-l.bw.b--mid-gray.b--mid-gray--light.b--near-black--dark(role='menu' style='height: 3rem;')
+      li#learn(tabindex='0' role='menuitem')
+        button.bg-transparent.near-black.near-black--light.near-white--dark.bn.dropdown-toggle.grow.pa3(title='Open learn menu')
+          .flex.justify-center.items-center
+            span Learn
+            .ph2
+              svg.icon.icon-caret-down.icon--xxs(viewBox='0 0 16 16')
+                use(xlink:href='#icon-caret-down')
+        ul.bg-white.black.bg-black--dark.white--dark.bg-white--light.black--light.ba.bw.b--mid-gray.b--mid-gray--light.b--near-black--dark.list.ma0.pa0.absolute.right-0.dropdown.z-999.top-100(role='menu' style='width:120px;left:0;')
+          li
+            a.link.db.w-100.ph3.pv2.bg-animate.hover-bg-light-gray.hover-bg-light-gray--light.hover-bg-dark-gray--dark(href='https://resonate.coop/pricing' target='_blank') Pricing
+          li
+            a.link.db.w-100.ph3.pv2.bg-animate.hover-bg-light-gray.hover-bg-light-gray--light.hover-bg-dark-gray--dark(href='https://resonate.coop/coop' target='_blank') The Co-op
+          li
+            a.link.db.w-100.ph3.pv2.bg-animate.hover-bg-light-gray.hover-bg-light-gray--light.hover-bg-dark-gray--dark(href='https://community.resonate.coop/c/handbook/60' target='_blank') Handbook
+          li
+            a.link.db.w-100.ph3.pv2.bg-animate.hover-bg-light-gray.hover-bg-light-gray--light.hover-bg-dark-gray--dark(href='https://community.resonate.coop' target='_blank') Forum
+      li.flex.w-100.flex-auto.justify-end.justify-center-l(x-data='search' role='menuitem')
+        button.bn.mr4.mr0-l.pa0.bg-transparent(x-show='!open' x-cloak='' @click='open = true')
+          .flex.items-center.justify-center
+            svg.icon.icon-search.icon--sm(viewBox='0 0 16 16')
+              use(xlink:href='#icon-search')
+            span.dn.db-l.pl3.near-black.near-black--light.near-white--dark Search
+        .search-component.fixed.w-100.initial-l.top-0.right-0(x-cloak='' x-show='open')
+          form#searchForm.relative(action='' novalidate='' name='searchForm' x-on:submit.prevent='submit')
+            label.search-label.flex.absolute.right-2.z-1(for='search')
+              svg.icon.icon-search.icon--sm.fill-dark-gray.fill-dark-gray--light.fill-mid-gray--dark(viewBox='0 0 16 16')
+                use(xlink:href='#icon-search')
+              span.clip Search
+            .js.absolute.right-4(style='top:50%;transform:translateY(-50%);')
+              button.h-100.pv2.ph4.bg-transparent.bn.bn.b.flex-shrink-0.grow(@click='open = false' type='button' title='Close search')
+                .flex.items-center.justify-center
+                  svg.icon.icon-close.icon--xs(viewBox='0 0 16 16')
+                    use(xlink:href='#icon-close')
+            input#search.bg-near-white.bg-near-white--light.black.black--light.bg-near-black--dark.light-gray--dark.pv3.pl1.pr0.w-100.bn(type='search' x-model="query" x-ref="input" autocomplete='off' value='' name='q' required='required' placeholder='Search')
+            .typeahead.bg-white.black.bg-black--dark.white--dark.bg-white--light.black--light.bl.br.bb.bw.b--mid-gray.b--mid-gray--light.b--near-black--dark.flex.flex-column.absolute.z-999.w-100.pv1.ph3(tabindex='0')
+              span.query.lh-copy.f5(x-show="query.length >= 3" x-text="'Searching for: ' + query")
+              dl
+                dt.f6.b Tags
+                dd.ma0
+                  ul.list.ma0.pa0.flex.flex-wrap(x-show='tags')
+                    template(x-for='tag in tags')
+                      li
+                        a.link.db.ph1.black.mr1.mv1.f5.br-pill.bg-light-gray.pointer(
+                          x-bind:href="'" + state.AppURL + "/tag?term=' + tag"
+                          x-text='tag'
+                        )
+  nav.dropdown-navigation.flex.w-100.w-50-l.flex-auto.justify-end-l(role='navigation' aria-label='Player navigation')
+    ul.flex.list.ma0.pa0.w-100.w-75-l.justify-around.items-center.mr3-l(role='menu')
+      li.flex.flex-auto.w-100.justify-center.relative(role='menuitem')
+        a.db.link.near-black.near-black--light.near-white--dark.pv2.ph3(href='https://stream.resonate.coop/artists') Browse
+      li.flex.flex-auto.w-100.justify-center.relative(role='menuitem')
+        a.link.db.near-black.near-black--light.near-white--dark.pv2.ph3(href='https://stream.resonate.coop/discover') Discover
+      if state.Token != ""
+        li.flex.flex-auto.w-100.justify-center.relative(role='menuitem')
+          a.link.db.near-black.near-black--light.near-white--dark.pv2.ph3(href='https://stream.resonate.coop/u/' + fmt.Sprint(profile.LegacyID) + '/library/favorites') Library
+      else
+        li(role='divider' class='flex flex-auto w-100 justify-center')
+      li.flex.flex-auto.justify-center.w-100.mw4(role='menuitem')
+        if state.Token == ""
+          a(href='/login?login_redirect_uri=%2Fweb%2Faccount' class='link pv1 ph3 ttu ba b--mid-gray b--dark-gray--dark db f6 b') Log In
+        else
+          button.bg-transparent.bn.dropdown-toggle.w-100.pa2.grow(title='Open menu')
+            span.flex.justify-center.items-center
+              .fl.w-100.mw2
+                .db.aspect-ratio.aspect-ratio--1x1.bg-dark-gray.bg-dark-gray--dark
+                  figure.ma0
+                    if len(profile.Usergroups) > 0
+                      if profile.Usergroups[0].Avatar == "00000000-0000-0000-0000-000000000000"
+                        img(src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' width%3D'300' height%3D'300' viewBox%3D'0 0 300 300'%2F%3E")
+                      else
+                        picture
+                          source(srcset=state.StaticURL + '/images/' + profile.Usergroups[0].Avatar + '-x60.webp 60w, ' + state.StaticURL +'/images/' + profile.Usergroups[0].Avatar + '-x120.webp 120w' type='image/webp')
+                            source(srcset=state.StaticURL + '/images/' + profile.Usergroups[0].Avatar + '-x60.jpg 60w, ' + state.StaticURL +'/images/' + profile.Usergroups[0].Avatar + '-x120.jpg 120w' type='image/jpeg')
+                          img(src=state.StaticURL + '/images/' + profile.Usergroups[0].Avatar + '-x120.jpg')
+                    figcaption.clip User avatar
+              .ph2
+                svg.icon.icon-caret-down.icon--xxs(viewBox='0 0 16 16')
+                  use(xlink:href='#icon-caret-down')
+          ul#usermenu.bg-white.black.bg-black--dark.white--dark.bg-white--light.black--light.ba.bw.b--mid-gray.b--mid-gray--light.b--near-black--dark.list.ma0.pa0.absolute.right-0.dropdown.z-999.bottom-100.top-100-l(style='width:100vw;left:auto;max-width:18rem;' role='menu')
+            li.pt3(role='menuitem')
+              .flex.flex-auto.items-center.ph3
+                span.b #{profile.DisplayName}
+            li.bb.bw.b--mid-gray.b--mid-gray--light.b--near-black--dark.mv3(role='separator')
+            li.flex.items-center.ph3(role='menuitem')
+              .flex.flex-column
+                label(for='credits') Credits
+                input.bn.br0.bg-transparent.b(disabled='' tabindex='-1' name='credits' type='number' x-bind:value='$store.app.state.profile.credits' value=profile.Credits readonly='')
+              .flex.flex-auto.justify-end
+            li.bb.bw.b--mid-gray.b--mid-gray--light.b--near-black--dark.mt3.mb2(role='separator')
+            li.mb1(role='menuitem')
+              a.link.db.pv2.pl3(href='../web/profile' + query) Profile
+            li.mb1(role='menuitem')
+              a.link.db.pv2.pl3(href='../web/account' + query) Update your account
+            li.mb1(role='menuitem')
+              a.link.db.pv2.pl3(href='../web/account-settings' + query) Account settings
+            li.mb1(role='menuitem')
+              a.link.db.pv2.pl3(href=state.AppURL + '/faq' target='blank') FAQ
+            li.bb.bw.b--mid-gray.b--mid-gray--light.b--near-black--dark.mv3(role='separator')
+            li.mb1(role='menuitem')
+              a.link.db.pv2.pl3(href='../web/logout' + query) Log Out

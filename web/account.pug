@@ -1,0 +1,102 @@
+extends layout
+
+block header
+  include header
+
+mixin labelInput(name, fieldType, label, value, disabled)
+  label.f5.lh-copy(for=name) #{label}
+  if disabled 
+    input.bg-black.white.bg-white--dark.black--dark.bg-black--light.white--light.placeholder--dark-gray.input-reset.w-100.bn.pa3(
+      required
+      id=name
+      name=name
+      autofocus=''
+      disabled='disabled'
+      type=fieldType
+      value=value
+      placeholder='')
+  else
+    input.bg-black.white.bg-white--dark.black--dark.bg-black--light.white--light.placeholder--dark-gray.input-reset.w-100.bn.pa3(
+      required
+      id=name
+      name=name
+      autofocus=''
+      type=fieldType
+      value=value
+      placeholder='')
+
+  //template(x-if='validator.state.errors.' + name)
+    span(x-text='validator.state.errors.' + name + '.message' class='message f5 pb2')
+
+block content
+  :go:func
+    Account(
+      isDevelopment bool,
+      path,
+      query,
+      csrfField,
+      title,
+      description string,
+      profile *Profile,
+      flash *session.Flash,
+      fragment string,
+      state *InitialState
+    )
+
+  if flash.Message != ""
+    .sticky.top-0.z-999.mb3.flex(class='')
+      p.ma0.pa3.w-100 #{flash.Message}
+      if !state.IsUserAccountComplete
+        p.ma0.pa3.tr.w-100
+          a.db.ph3(href='../web/logout') Log out
+  else if !state.IsUserAccountComplete
+    .sticky.top-0.z-999.bg-white.black.mb3.flex.bb.b--light-gray.black
+      p.ma0.pa3.w-100 Account not complete
+      p.ma0.pa3.tr.w-100
+        a.db.ph3(href='../web/logout') Log out
+
+  .flex.flex-column.justify-center.items-center.pb6.w-100
+    .flex.flex-column.flex-auto.ph3.w-100.w-auto-l.mw6
+      if !state.IsUserAccountComplete
+        svg.icon.fill-black.fill-white--dark.fill-black--light(viewBox='0 0 16 16')
+          use(xlink:href='#icon-logo')
+      h2.lh-title.mt5.f3.fw1
+        if !state.IsUserAccountComplete
+          | Create
+        else
+          | Update
+        | &nbsp;your account
+      div
+        .flex.flex-column.flex-auto.pb6
+          form(action='' method='POST')
+            !=csrfField
+            input(type='hidden' name='_method' value='PUT')
+            //input(type='hidden' name='membership' value='yes')
+            //input(type='hidden' name='shares' value='5')
+            .mb3
+              if len(profile.Usergroups) > 0
+                +labelInput('displayName', 'text', 'Display name', profile.Usergroups[0].DisplayName, true)
+                .flex.justify-end.mt2
+                  a(class='link underline f5 dark-gray tr' href='/profile')
+                    | Change your display name
+              else
+                +labelInput('displayName', 'text', 'Display name', '', false)
+            .mb3
+              +labelInput('email', 'email', 'E-mail', profile.Email, true)
+              .flex.justify-end.mt2
+                a(class='link underline f5 dark-gray tr' href='/account-settings#change-email') Change your email
+            .mb3
+              .flex.flex-auto.flex-column
+                select#country.bn.bg-black.white.bg-white--dark.black--dark.bg-black--light.white--light.pa3(name='country')
+                  option(value='' selected='selected' disabled='disabled') Select a country
+                  each country in state.CountryList
+                    if country.Code == profile.Country
+                      option(value=country.Code selected='selected') #{country.Name}
+                    else
+                      option(value=country.Code) #{country.Name}
+            .flex.flex-auto
+              button.bg-white.dib.bn.pv3.ph5.mt3.flex-shrink-0.f5.grow(style='outline:solid 1px var(--near-black);outline-offset:-1px' type='submit') Update
+
+
+block footer
+  include footer

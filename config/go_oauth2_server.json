@@ -1,7 +1,7 @@
 {
   "CSRF": {
     "Key": "my-secure-csrf-key",
-    "Origins": "resonid.merefield.technology,upload.resonate.localhost,beta.resonate.localhost, merefield.technology"
+    "Origins": ""
   },
   "Mailgun": {
     "Sender": "postmaster@sandboxXXXX.mailgun.org",

@@ -1,0 +1,25 @@
+extends layout
+
+block header
+  include header
+
+block content
+  :go:func
+    Contact(
+      isDevelopment bool,
+      path,
+      query,
+      csrfField,
+      title,
+      description string,
+      profile *Profile,
+      flash *session.Flash,
+      fragment string,
+      state *InitialState
+    )
+
+  p
+    | Hello
+
+block footer
+  include footer

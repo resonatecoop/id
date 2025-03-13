@@ -1,0 +1,61 @@
+extends layout
+
+block header
+  include header
+
+block content
+  :go:func
+    Checkout(
+      isDevelopment bool,
+      path,
+      query,
+      csrfField,
+      title,
+      description string,
+      profile *Profile,
+      flash *session.Flash,
+      fragment string,
+      state *InitialState
+    )
+
+  if flash.Message != ""
+    .sticky.top-0.z-999.mb3.flex(class='')
+      p.ma0.pa3.w-100 #{flash.Message}
+      if !state.IsUserAccountComplete
+        p.ma0.pa3.tr.w-100
+          a.db.ph3(href='../web/logout') Log out
+
+  .flex.flex-column.justify-center.items-center.pb6.w-100.mh3.mh0-ns
+    section#checkout.flex.flex-column
+      .flex.flex-column.flex-auto.pt4.ph3.mw6.ph0-l
+        .flex
+          a.link.db.flex.items-center.pv2.ph3.mb2(href='../web/account')
+            svg.icon.icon--sm.icon.fill-black.fill-white--dark.fill-black--light(viewBox='0 0 16 16')
+              use(xlink:href='#icon-arrow')
+            span.pl2
+        each product in state.Products
+          article.flex.ba.bw.b--mid-gray.pv3.ph4.mb3
+            div
+              figure.ma0.w4.h4
+                img(src=product.Images[0])
+                figcaption.clip Product image
+            .ph3
+              p.ma0.f3.fw1.lh-title=product.Name
+              dl
+                dt.clip Description
+                dd.ma0
+                  p.lh-copy.f5=product.Description
+                if product.Quantity != 0
+                  dt.dib.mr2 Qty
+                  dd.ma0.dib
+                    p.lh-copy.f5.b=product.Quantity
+        .flex.items-center
+          form(action='' method='POST')
+            !=csrfField
+            button.bg-white.b.dib.bn.pv3.ph5.flex-shrink-0.f5.grow(type='submit' style='outline:solid 1px var(--near-black);outline-offset:-1px') Checkout
+          p.lh-copy.pl3.f5
+            | Powered by 
+            a.link.b(href='https://stripe.com' target='_blank' re='noreferer noopener') Stripe
+  
+block footer
+  include footer

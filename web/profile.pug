@@ -1,0 +1,26 @@
+extends layout
+
+block header
+  include header
+
+block content
+  :go:func
+    RenderProfile(
+      isDevelopment bool,
+      path,
+      query,
+      csrfField,
+      title,
+      description string,
+      profile *Profile,
+      flash *session.Flash,
+      fragment string,
+      state *InitialState
+    )
+
+  if flash.Message != ""
+    .sticky.top-0.z-999.mb3.flex(class='')
+      p.ma0.pa3.w-100 #{flash.Message}
+
+block footer
+  include footer

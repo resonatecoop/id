@@ -1,9 +1,7 @@
 package web
 
 import (
-	"encoding/json"
 	"fmt"
-	"html/template"
 	"net/http"
 	"strconv"
 
@@ -122,7 +120,7 @@ func (s *Service) checkoutForm(w http.ResponseWriter, r *http.Request) {
 
 	usergroups, _ := s.getUserGroupList(user, userSession.AccessToken)
 
-	initialState, err := json.Marshal(NewInitialState(
+	state := NewInitialState(
 		s.cnf,
 		client,
 		user,
@@ -135,17 +133,6 @@ func (s *Service) checkoutForm(w http.ResponseWriter, r *http.Request) {
 		products,
 		csrfToken,
 		nil,
-	))
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Inject initial state into choo app
-	fragment := fmt.Sprintf(
-		`<script>window.initialState=JSON.parse('%s')</script>`,
-		string(initialState),
 	)
 
 	var usergroupList []UserGroup
@@ -170,23 +157,21 @@ func (s *Service) checkoutForm(w http.ResponseWriter, r *http.Request) {
 		profile.DisplayName = usergroups.Usergroup[0].DisplayName
 	}
 
-	err = renderTemplate(w, "checkout.html", map[string]interface{}{
-		"appURL":                s.cnf.AppURL,
-		"applicationName":       client.ApplicationName.String,
-		"clientID":              client.Key,
-		"flash":                 flash,
-		"initialState":          template.HTML(fragment),
-		"isUserAccountComplete": isUserAccountComplete,
-		"products":              products,
-		"profile":               profile,
-		"queryString":           getQueryString(query),
-		"staticURL":             s.cnf.StaticURL,
-		csrf.TemplateTag:        csrf.TemplateField(r),
-	})
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	Checkout(
+		s.cnf.IsDevelopment,
+		r.URL.Path,
+		getQueryString(query),
+		string(csrf.TemplateField(r)),
+		"Checkout",
+		"",
+		profile,
+		flash,
+		state.toFragment(),
+		state,
+		w,
+	)
 }
 
 // checkoutSuccess

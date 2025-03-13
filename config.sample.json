@@ -77,8 +77,11 @@
   "EmailTokenSecretKey": "very-secret",
   "StaticURL": "https://dash.resonate.localhost",
   "AppURL": "https://stream.resonate.localhost",
-  "UserAPIHostname": "api.resonate.localhost",
-  "UserAPIPort": ":443",
+  "UserAPI": {
+    "Hostname": "0.0.0.0",
+    "Port": "11000",
+    "InsecureSkipVerify": true
+  ,
   "Session": {
     "Secret": "test_secret",
     "Path": "/",

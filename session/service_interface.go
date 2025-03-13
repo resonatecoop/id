@@ -13,6 +13,6 @@ type ServiceInterface interface {
 	ClearCheckoutSession() error
 	ClearUserSession() error
 	SetFlashMessage(flash *Flash) error
-	GetFlashMessage() (interface{}, error)
+	GetFlashMessage() (*Flash, error)
 	Close()
 }

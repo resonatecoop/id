@@ -33,7 +33,9 @@ func (s *Service) passwordUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// verify current password
-	if pass.VerifyPassword(user.Password.String, r.Form.Get("password")) != nil {
+	err = pass.VerifyPassword(user.Password.String, r.Form.Get("password"))
+
+	if err != nil {
 		if r.Header.Get("Accept") == "application/json" {
 			response.Error(w, ErrInvalidPassword.Error(), http.StatusBadRequest)
 			return
@@ -71,7 +73,9 @@ func (s *Service) passwordUpdate(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-CSRF-Token", csrf.Token(r))
 
 	// set new password
-	if s.oauthService.SetPassword(user, r.Form.Get("password_new")); err != nil {
+	err = s.oauthService.SetPassword(user, r.Form.Get("password_new"))
+
+	if err != nil {
 		if r.Header.Get("Accept") == "application/json" {
 			response.Error(w, err.Error(), http.StatusBadRequest)
 			return

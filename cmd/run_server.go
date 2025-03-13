@@ -29,7 +29,7 @@ func RunServer(configBackend string) error {
 	defer services.Close()
 
 	secureMiddleware := secure.New(secure.Options{
-		FrameDeny:          false, // already set in web/render.go
+		FrameDeny:          true,
 		ContentTypeNosniff: true,
 		BrowserXssFilter:   true,
 		IsDevelopment:      cnf.IsDevelopment,

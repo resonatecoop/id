@@ -1,6 +1,6 @@
 {{ define "base" }}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" x-data>
 <head>
   <link rel="preload" as="font" crossorigin="" href="https://static.resonate.is/fonts/Graphik-Semibold.woff2">
   <link rel="preload" as="font" crossorigin="" href="https://static.resonate.is/fonts/Graphik-Semibold.woff">
@@ -18,9 +18,18 @@
 
   <link href="/css/{{ .stylesheet }}" rel="stylesheet">
   
-  <script type="text/javascript" defer src="/js/{{ .javascript }}"></script>
+  <script type="text/javascript" defer src="../js/{{ .javascript }}"></script>
+  <script type="text/javascript" defer src="https://localhost:8000/js/main.js"></script>
+
   <script src="https://polyfill.io/v3/polyfill.min.js?version=3.52.1&features=fetch"></script>
   <script src="https://js.stripe.com/v3/"></script>
+  <script>
+    new EventSource('https://localhost:8000/esbuild').addEventListener('change', () => location.reload())
+  </script>
+
+  <style>
+    [x-cloak] { display: none !important; }
+  </style>
 </head>
 <body class="ff-no-fouc color-scheme--light">
   {{ if .isUserAccountComplete }}
@@ -52,8 +61,8 @@
             <li><a href="https://community.resonate.coop" target="_blank" class="link db w-100 ph3 pv2 bg-animate hover-bg-light-gray hover-bg-light-gray--light hover-bg-dark-gray--dark">Forum</a></li>
           </ul>
         </li>
-        <li id="search-host" role="menuitem" class="search flex w-100 flex-auto justify-end justify-center-l">
-          <button class="bn mr4 mr0-l pa0 bg-transparent">
+        <li x-data="search" role="menuitem" class="flex w-100 flex-auto justify-end justify-center-l">
+          <button x-show="!open" @click="open = true" class="bn mr4 mr0-l pa0 bg-transparent">
             <div class="flex items-center justify-center">
               <svg viewBox="0 0 16 16" class="icon icon-search icon--sm">
                 <use xlink:href="#icon-search"></use>
@@ -61,6 +70,44 @@
               <span class="dn db-l pl3 near-black near-black--light near-white--dark">Search</span>
             </div>
           </button>
+          <div x-cloak="" x-show="open" class="search-component fixed w-100 initial-l top-0 right-0">
+            <form action="" novalidate="" class="relative" id="searchForm" name="searchForm" x-on:submit.prevent="submit">
+              <label class="search-label flex absolute right-2 z-1" for="search">
+                <svg viewBox="0 0 16 16" class="icon icon-search icon--sm fill-dark-gray fill-dark-gray--light fill-mid-gray--dark"><use xlink:href="#icon-search"></use></svg>
+                <span class="clip">Search</span>
+              </label>
+              <div class="js absolute right-4" style="top:50%;transform:translateY(-50%);">
+                <button @click="open = false" type="button" class="h-100 pv2 ph4 bg-transparent bn bn b flex-shrink-0 grow" title="Close search"><div class="flex items-center justify-center"><svg viewBox="0 0 16 16" class="icon icon-close icon--xs"><use xlink:href="#icon-close"></use></svg></div></button>
+              </div>
+              <input class="bg-near-white bg-near-white--light black black--light bg-near-black--dark light-gray--dark pv3 pl1 pr0 w-100 bn" type="search" autocomplete="off" value="" name="q" id="search" required="required" placeholder="Search">
+              <div tabindex="0" class="typeahead bg-white black bg-black--dark white--dark bg-white--light black--light bl br bb bw b--mid-gray b--mid-gray--light b--near-black--dark flex flex-column absolute z-999 w-100 pv1 ph3">
+                <dl>
+                  <dt class="f6 b">Tags</dt>
+                  <dd class="ma0">
+                    <ul class="list ma0 pa0 flex flex-wrap" x-show="tags">
+                      <template x-for="tag in tags">
+                        <li>
+                          <a x-text="tag" class="link db ph1 black mr1 mv1 f5 br-pill bg-light-gray pointer"></a>
+                        </li>
+                      </template>
+                    </ul>
+                  </dd>
+                </dl>
+                <dl x-show="artists.length">
+                  <dt class="f6 b">Play history</dt>
+                  <dd class="ma0">
+                    <ul class="list ma0 pa0 flex flex-column">
+                      <template x-for="artist in artists">
+                        <li class="mb2">
+                          <a x-text="artist" class="db lh-copy f5 link underline-hover pointer"></a>
+                        </li>
+                      </template>
+                    </ul>
+                  </dd>
+                </dl>
+              </div>
+            </form>
+          </div>
         </li>
       </ul>
     </nav>
@@ -116,7 +163,7 @@
             <li class="flex items-center ph3" role="menuitem">
               <div class="flex flex-column">
                 <label for="credits">Credits</label>
-                <input disabled tabindex="-1" name="credits" type="number" value="{{ .profile.Credits }}" readonly class="bn br0 bg-transparent b">
+                <input disabled tabindex="-1" name="credits" type="number" x-bind:value="" value="{{ .profile.Credits }}" readonly class="bn br0 bg-transparent b">
               </Div>
               <div class="flex flex-auto justify-end">
               </div>
@@ -165,7 +212,7 @@
           <dd class="ma0 pb2"><a href="https://resonate.coop/coop" target="_blank" rel="noopener noreferer" class="link mid-gray pa0 lh-copy">The Co-op</a></dd>
           <dd class="ma0 pb2"><a href="https://community.resonate.is/c/handbook/60" target="_blank" rel="noopener noreferer" class="link mid-gray pa0 lh-copy">Handbook</a></dd>
         </dl>
-        <p class="dark-gray f5 ttu">© 2015-2022 Resonate Coop</p>
+        <p class="dark-gray f5 ttu">© 2024 Resonate Coop</p>
       </div>
       <div>
         <dl>

@@ -25,8 +25,10 @@ type ServiceInterface interface {
 	CreateClientTx(tx *bun.DB, clientID, secret, redirectURI, applicationName, applicationHostname, applicationURL string) (*model.Client, error)
 	AuthClient(clientID, secret string) (*model.Client, error)
 	GetValidEmailToken(token string) (*model.EmailToken, *model.User, error)
+	CreateJwtEmailTokenClaims(*model.EmailTokenClaims) (string, error)
 	ClearExpiredEmailTokens() error
 	DeleteEmailToken(*model.EmailToken, bool) error
+	CreateEmailToken() (*model.EmailToken, error)
 	SendEmailToken(email *model.Email, emailTokenLink string) (*model.EmailToken, error)
 	SendEmailTokenTx(db *bun.DB, email *model.Email, emailTokenLink string) (*model.EmailToken, error)
 	UserExists(username string) bool

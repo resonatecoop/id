@@ -1,0 +1,78 @@
+extends layout
+
+block header
+  include header
+
+block content
+  :go:func
+    Login(
+      isDevelopment bool,
+      path,
+      query,
+      csrfField,
+      title,
+      description string,
+      profile *Profile,
+      flash *session.Flash,
+      fragment string,
+      state *InitialState,
+      client *model.Client
+    )
+
+  if flash.Message != ""
+    .sticky.top-0.z-999.mb3.flex(class='')
+      p.ma0.pa3.w-100 #{flash.Message}
+      if !state.IsUserAccountComplete
+        p.ma0.pa3.tr.w-100
+          a.db.ph3(href='../web/logout') Log out
+
+  .flex.flex-column.flex-auto.items-center.justify-center.min-vh-100.mh3.pb6
+    .flex.flex-column.w-100.w-auto-l.ph0.ph4-ns.pt4.pb3
+      .flex.flex-column
+        h2.f3.fw1.mt3.near-black.near-black--light.light-gray--dark.lh-title
+          | Log in to 
+          =client.ApplicationName.String
+        .flex.flex-column.flex-auto
+          .flex.flex-column.flex-auto
+            form#login.flex.flex-column.flex-auto.ma0.pa0(x-bind:novalidate='true', x-data='loginForm', x-on:submit.prevent='submit', action='', method='POST')
+              !=csrfField
+              .flex.flex-column.pa2.mb3.ba.bw.b--black-50(x-show='errors.length > 2', x-cloak=)
+                h4.body-color.f4.ma0 Something went wrong.
+                h5.body-color.f5.ma0.pv1 Please check the errors in the form and try again.
+                ul.flex.flex-column.list.ma0.pa0.ml3.error
+                  template(x-for='error in errors')
+                    li(x-text='error.message')
+
+              template(x-if='error.length', x-cloak=)
+                p.pa2.mb3.ba.bw.b--black-50(x-text='error')
+              .mb3
+                .relative
+                  input#email.bg-black.white.bg-white--dark.black--dark.bg-black--light.white--light.placeholder--dark-gray.input-reset.w-100.bn.pa3.valid(x-on:change.debounce="validate($event)" autofocus='autofocus', value='', autocomplete='false', type='email', name='email', placeholder='E-mail', required='required')
+                  template(x-if='validator.state.errors.email')
+                    .absolute.left-0.ph1.flex.items-center(style='top:50%;transform: translate(-100%, -50%);')
+                      svg.icon.icon-info.icon--sm.fill-red(viewBox='0 0 16 16')
+                        use(xlink:href='#icon-info')
+                template(x-if='validator.state.errors.email')
+                  span.message.f5.pb2(x-text='validator.state.errors.email.message')
+              .mb3
+                .relative
+                  input#password.bg-black.white.bg-white--dark.black--dark.bg-black--light.white--light.placeholder--dark-gray.input-reset.w-100.bn.pa3.valid(x-on:change.debounce="validate($event)" value='', autocomplete='false', type='password', name='password', placeholder='Password', required='required')
+                  template(x-if='validator.state.errors.password')
+                    .absolute.left-0.ph1.flex.items-center(style='top:50%;transform: translate(-100%, -50%);')
+                      svg.icon.icon-info.icon--sm.fill-red(viewBox='0 0 16 16')
+                        use(xlink:href='#icon-info')
+                template(x-if='validator.state.errors.password')
+                  span.message.f5.pb2(x-text='validator.state.errors.password.message')
+                .flex.justify-end
+                  a.link.underline.lightGrey.f7.ma0.mt1(href='../web/password-reset') Forgot your password?
+              .flex.mt3
+                .flex.mr3
+                  p.f5.lh-copy Don&apos;t have an account? 
+                    a.link.b(href='/join') Join
+                    | .
+                .flex.flex-auto.justify-end
+                  button.bg-white.black.bg-white--light.black--light.bg-black--dark.near-white--dark.dib.pv3.ph5.flex-shrink-0.f5.grow.ba.bw.b--near-black.b--dark-gray--dark(x-bind:disabled='loading', type='submit') Log In
+
+
+block footer
+  include footer

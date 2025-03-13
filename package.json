@@ -1,0 +1,33 @@
+{
+  "name": "resonate-id",
+  "version": "0.0.0",
+  "description": "Resonate id server",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "./node_modules/.bin/esbuild assets/js/main.js --bundle --outfile=public/js/main.js",
+    "build:js:minify": "./node_modules/.bin/esbuild assets/js/main.js --minify --bundle --outfile=public/js/main.min.js",
+    "build:js": "./node_modules/.bin/esbuild assets/js/main.js --bundle --outfile=public/js/main.js",
+    "build:css": "postcss assets/css/main.css -o public/css/main.min.css",
+    "watch:css": "postcss --watch assets/css/main.css -o public/css/main.min.css",
+    "watch:js": "./node_modules/.bin/esbuild assets/js/main.js --bundle --outdir=./public/js --watch --servedir=./public --keyfile=your.key --certfile=your.cert"
+  },
+  "keywords": [
+    "golang"
+  ],
+  "author": "Augustin Godiscal <hello@auggod.tech>",
+  "license": "MIT",
+  "devDependencies": {
+    "esbuild": "0.19.2",
+    "postcss": "^8.4.28",
+    "postcss-cli": "^10.1.0",
+    "postcss-import": "^15.1.0",
+    "postcss-minify": "^1.1.0",
+    "postcss-preset-env": "^8.0.1"
+  },
+  "dependencies": {
+    "alpinejs": "^3.13.3",
+    "browser-cookies": "^1.2.0",
+    "validator": "^12.0.0",
+    "zxcvbn-async": "^0.0.6"
+  }
+}

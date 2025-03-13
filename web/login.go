@@ -1,11 +1,10 @@
 package web
 
 import (
-	"encoding/json"
 	"fmt"
-	"html/template"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gorilla/csrf"
 	"github.com/resonatecoop/id/session"
@@ -23,29 +22,35 @@ func (s *Service) loginForm(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("X-CSRF-Token", csrf.Token(r))
 
-	initialState, _ := json.Marshal(map[string]interface{}{
-		"clients": s.cnf.Clients,
-	})
-
-	// Inject initial state into choo app
-	fragment := fmt.Sprintf(
-		`<script>window.initialState=JSON.parse('%s')</script>`,
-		string(initialState),
-	)
+	state := NewGuestInitialState(s.cnf)
 
 	flash, _ := sessionService.GetFlashMessage()
 
-	err = renderTemplate(w, "login.html", map[string]interface{}{
-		"appURL":         s.cnf.AppURL,
-		"flash":          flash,
-		"initialState":   template.HTML(fragment),
-		"queryString":    getQueryString(r.URL.Query()),
-		csrf.TemplateTag: csrf.TemplateField(r),
-	})
+	// Get the client from the request context
+	client, err := getClient(r)
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
 	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	query := r.URL.Query()
+
+	Login(
+		s.cnf.IsDevelopment,
+		r.URL.Path,
+		getQueryString(query),
+		string(csrf.TemplateField(r)),
+		"Log in",
+		"Log in to your Resonate account",
+		&Profile{},
+		flash,
+		state.toFragment(),
+		state,
+		client,
+		w,
+	)
 }
 
 func (s *Service) login(w http.ResponseWriter, r *http.Request) {
@@ -87,6 +92,43 @@ func (s *Service) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	t := time.Date(2022, 8, 17, 0, 0, 0, 0, time.UTC)
+
+	if user.CreatedAt.Before(t) && user.LastPasswordChange.IsZero() {
+		message := "Please reset your password. You should receive an e-mail shortly."
+		switch r.Header.Get("Accept") {
+		case "application/json":
+			response.Error(w, message, http.StatusBadRequest)
+		default:
+			err = sessionService.SetFlashMessage(&session.Flash{
+				Type:    "Info",
+				Message: message,
+			})
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			http.Redirect(w, r, r.RequestURI, http.StatusFound)
+		}
+
+		go func() {
+			email := model.NewOauthEmail(
+				user.Username,
+				"Reset your password",
+				"password-reset",
+			)
+			_, _ = s.oauthService.SendEmailToken(
+				email,
+				fmt.Sprintf(
+					"https://%s/password-reset",
+					s.cnf.Hostname,
+				),
+			)
+		}()
+
+		return
+	}
+
 	// Email should be confirmed (click autologin link in email)
 	if !user.EmailConfirmed {
 		switch r.Header.Get("Accept") {
@@ -104,20 +146,20 @@ func (s *Service) login(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, r.RequestURI, http.StatusFound)
 		}
 
-		// resend email
-		// TODO resend only if a last token has expired
-		email := model.NewOauthEmail(
-			user.Username,
-			"Confirm your email",
-			"email-confirmation",
-		)
-		_, _ = s.oauthService.SendEmailToken(
-			email,
-			fmt.Sprintf(
-				"https://%s/email-confirmation",
-				s.cnf.Hostname,
-			),
-		)
+		go func() {
+			email := model.NewOauthEmail(
+				user.Username,
+				"Confirm your email",
+				"email-confirmation",
+			)
+			_, _ = s.oauthService.SendEmailToken(
+				email,
+				fmt.Sprintf(
+					"https://%s/email-confirmation",
+					s.cnf.Hostname,
+				),
+			)
+		}()
 
 		return
 	}
@@ -185,5 +227,9 @@ func (s *Service) login(w http.ResponseWriter, r *http.Request) {
 	if loginRedirectURI == "" {
 		loginRedirectURI = "/web/authorize"
 	}
-	redirectWithQueryString(loginRedirectURI, r.URL.Query(), w, r)
+
+	query := r.URL.Query()
+
+	redirectWithQueryString(loginRedirectURI, query, w, r)
+	return
 }

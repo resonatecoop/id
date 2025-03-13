@@ -2,20 +2,39 @@
 
 {{ define "content" }}
 <div id="app">
-  <main class="flex flex-column flex-auto items-center justify-center min-vh-100 mh3 pt6 pb6">
-    <div class="flex flex-column w-100 w-auto-l ph4 pt4 pb3">
-      <h2 class="f3 fw1 mt3 near-black near-black--light light-gray--dark lh-title">Log In</h2>
-      {{ if .flash }}
-      <div>
-        <p{{ if eq .flash.Type "Error" }} class="red"{{ end }}>{{ .flash.Message }}</p>
-      </div>
-      {{ end }}
-      <div class="flex flex-column flex-auto">
+  <main class="flex flex-column flex-auto items-center justify-center min-vh-100 mh3 pb6">
+    <div class="flex flex-column w-100 w-auto-l ph0 ph4-ns pt4 pb3">
+      <div class="flex flex-column">
+        <h2 class="f3 fw1 mt3 near-black near-black--light light-gray--dark lh-title">Log In</h2>
+        {{ if .flash }}
+        <div>
+          <p{{ if eq .flash.Type "Error" }} class="red"{{ end }}>{{ .flash.Message }}</p>
+        </div>
+        {{ end }}
         <div class="flex flex-column flex-auto">
-          <form id="login" action="" method="POST" class="flex flex-column flex-auto ma0 pa0">
-            {{ .csrfField }}
-            <div>
-              <div class="flex flex-column mb3">
+          <div class="flex flex-column flex-auto">
+            <form
+              x-bind:novalidate="true"
+              x-bind:method="method"
+              x-bind:action="action"
+              x-data="form"
+              x-on:submit.prevent="submit"
+              id="login"
+              action=""
+              method="POST"
+              class="flex flex-column flex-auto ma0 pa0">
+              {{ .csrfField }}
+
+              <div x-show="errors.length > 1" x-cloak="" class="flex flex-column pa2 mb3 ba bw b--black-50">
+                <h4 class="body-color f4 ma0">Something went wrong.</h4>
+                <h5 class="body-color f5 ma0 pv1">Please check the errors in the form and try again.</h5>
+                <ul class="flex flex-column list ma0 pa0 ml3 error">
+                  <template x-for="error in errors">
+                    <li x-text="error.message"></li>
+                  </template>
+                </ul>
+              </div>
+              <div class="mb3">
                 <div class="relative">
                   <input
                     autofocus="autofocus"
@@ -28,9 +47,15 @@
                     required="required"
                     class="bg-black white bg-white--dark black--dark bg-black--light white--light placeholder--dark-gray input-reset w-100 bn pa3 valid"
                   />
+                  <template x-if="validator.state.errors.email">
+                    <div style="top:50%;transform: translate(-100%, -50%);" class="absolute left-0 ph1 flex items-center"><svg viewBox="0 0 16 16" class="icon icon-info icon--sm fill-red"><use xlink:href="#icon-info"></use></svg></div>
+                  </template>
                 </div>
+                <template x-if="validator.state.errors.email">
+                  <span x-text="validator.state.errors.email.message" class="message f5 pb2"></span>
+                </template>
               </div>
-              <div class="flex flex-column mb3">
+              <div class="mb3">
                 <div class="relative">
                   <input
                     value=""
@@ -41,22 +66,28 @@
                     placeholder="Password"
                     required="required"
                     class="bg-black white bg-white--dark black--dark bg-black--light white--light placeholder--dark-gray input-reset w-100 bn pa3 valid"
-                  />
+                    />
+                  <template x-if="validator.state.errors.password">
+                    <div style="top:50%;transform: translate(-100%, -50%);" class="absolute left-0 ph1 flex items-center"><svg viewBox="0 0 16 16" class="icon icon-info icon--sm fill-red"><use xlink:href="#icon-info"></use></svg></div>
+                  </template>
                 </div>
+                <template x-if="validator.state.errors.password">
+                  <span x-text="validator.state.errors.password.message" class="message f5 pb2"></span>
+                </template>
                 <div class="flex justify-end">
                   <a href="../web/password-reset" class="link underline lightGrey f7 ma0 mt1">Forgot your password?</a>
                 </div>
               </div>
-            </div>
-            <div class="flex mt3">
-              <div class="flex mr3">
-                <p class="f5 lh-copy">Don't have an account? <a href="../web/join" class="link b">Join</a>.</p>
+              <div class="flex mt3">
+                <div class="flex mr3">
+                  <p class="f5 lh-copy">Don't have an account? <a href="/join" class="link b">Join</a>.</p>
+                </div>
+                <div class="flex flex-auto justify-end">
+                  <button x-bind:disabled="loading" class="bg-white dib pv3 ph5 flex-shrink-0 f5 grow ba bw b--near-black" type="submit">Log In</button>
+                </div>
               </div>
-              <div class="flex flex-auto justify-end pr1">
-                <button type="submit" class="bg-white dib grow ba bw b--near-black b pv2 ph4 flex-shrink-0 f5">Log In</button>
-              </div>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
       </div>
     </div>

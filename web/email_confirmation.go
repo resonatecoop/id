@@ -91,7 +91,10 @@ func (s *Service) getEmailConfirmationToken(w http.ResponseWriter, r *http.Reque
 		AccessToken:  accessToken.Token,
 		RefreshToken: refreshToken.Token,
 	}
-	if err := sessionService.SetUserSession(userSession); err != nil {
+
+	err = sessionService.SetUserSession(userSession)
+
+	if err != nil {
 		err = sessionService.SetFlashMessage(&session.Flash{
 			Type:    "Error",
 			Message: err.Error(),

@@ -55,10 +55,13 @@ var Cnf = &Config{
 	ApplicationURL:      "https://upload.resonate.is",
 	Origins:             []string{"upload.resonate.is", "beta.stream.resonate.is"},
 	EmailTokenSecretKey: "super secret key",
-	UserAPIHostname:     "0.0.0.0",
-	UserAPIPort:         ":11000",
-	StaticURL:           "https://dash.resonate.coop",
-	AppURL:              "https://stream.resonate.coop",
+	UserAPI: UserAPIConfig{
+		Hostname:           "api.resonate.coop",
+		Port:               "",
+		InsecureSkipVerify: false,
+	},
+	StaticURL: "https://dash.resonate.coop",
+	AppURL:    "https://stream.resonate.coop",
 	Stripe: StripeConfig{
 		WebHookSecret: "wh_",
 		Domain:        "id.resonate.coop",

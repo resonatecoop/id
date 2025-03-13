@@ -1,0 +1,81 @@
+extends layout
+
+block header
+  include header
+
+block content
+  :go:func
+    RenderMembership(
+      isDevelopment bool,
+      path,
+      query,
+      csrfField,
+      title,
+      description string,
+      profile *Profile,
+      flash *session.Flash,
+      fragment string,
+      state *InitialState
+    )
+
+  if flash.Message != ""
+    .sticky.top-0.z-999.mb3.flex(class='')
+      p.ma0.pa3.w-100 #{flash.Message}
+
+  .flex.flex-column.justify-center.items-center.w-100.pb6
+    .flex.flex-column.flex-auto.pt4.ph3.mw6.ph0-l
+      h2.lh-title.f3.fw1 Your memberships
+      p.lh-copy.f5.measure
+        | You may cancel or renew an active membership at any time.
+        br
+        | No refund will be be made in case of a cancellation of an active membership.
+
+      div
+        .flex.flex-column.flex-auto.pb6
+          div
+            .overflow-auto.ph4.ba.bw.b--black-20.pv4
+              table.f6.w-100.mw8.center(cellspacing="0")
+                thead
+                  tr
+                    th.fw6.bb.b--black-20.tl.pb3.pr3.bg-white Name
+                    th.fw6.bb.b--black-20.tl.pb3.pr3.bg-white Date From
+                    th.fw6.bb.b--black-20.tl.pb3.pr3.bg-white Until
+                    th.fw6.bb.b--black-20.tl.pb3.pr3.bg-white Contribution
+                    th.fw6.bb.b--black-20.tl.pb3.pr3.bg-white
+                tbody.lh-copy
+                  each membership in state.Memberships
+                    tr
+                      td.pv3.pr3.bb.b--black-20=membership.Name
+                      td.pv3.pr3.bb.b--black-20=membership.DateFrom.Format("02 January 2006")
+                      td.pv3.pr3.bb.b--black-20=membership.DateTo.Format("02 January 2006")
+                      td.pv3.pr3.bb.b--black-20=membership.Contribution
+                      td.pv3.pr3.bb.b--black-20
+                        if membership.Active
+                          form(action=, method="POST")
+                            !=csrfField
+                            input(type="hidden", name="_method", value="DELETE")
+                            input(type="hidden", name="id", value=membership.SubscriptionID)
+                            .flex.flex-auto
+                              button.bg-white.dib.ba.bw.b--near-black.pa1.flex-shrink-0.f6.grow(type="submit")
+                                | Cancel
+      h2.lh-title.f3.fw1 Your shares
+      div
+        .flex.flex-column.flex-auto.pb6
+          div
+            .overflow-auto
+              table.f6.w-100.mw8.center(cellspacing="0")
+                thead
+                  tr
+                    th.fw6.bb.b--black-20.tl.pb3.pr3.bg-white Amount (1€ par value)
+                    th.fw6.bb.b--black-20.tl.pb3.pr3.bg-white Date Purchased
+                tbody.lh-copy
+                  each share in state.Shares
+                    tr
+                      td.pv3.pr3.bb.b--black-20=share.Amount
+                      td.pv3.pr3.bb.b--black-20=share.DatePurchased.Format("02 January 2006")
+        p.ma0.pa0.lh-copy.f5
+          | For shares purchased before 2022/08/17, you may contact us to receive a full copy of the data.
+
+
+block footer
+  include footer

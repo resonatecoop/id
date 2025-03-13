@@ -1,6 +1,11 @@
 package web
 
 import (
+	"encoding/json"
+	"fmt"
+	"strings"
+	"time"
+
 	"github.com/resonatecoop/id/config"
 	"github.com/resonatecoop/id/session"
 	"github.com/resonatecoop/user-api-client/models"
@@ -76,17 +81,53 @@ func NewProfile(
 }
 
 type InitialState struct {
-	ApplicationName string                `json:"applicationName"`
-	ClientID        string                `json:"clientID"`
-	UserGroup       string                `json:"usergroup"`
-	Token           string                `json:"token"`
-	Clients         []config.ClientConfig `json:"clients"`
-	Profile         *Profile              `json:"profile"`
-	Memberships     []Membership          `json:"memberships"`
-	Shares          []Share               `json:"shares"`
-	Products        []Product             `json:"products"`
-	CSRFToken       string                `json:"csrfToken"`
-	CountryList     []Country             `json:"countries"`
+	ApplicationName       string                `json:"applicationName"`
+	StaticURL             string                `json:"staticURL"`
+	AppURL                string                `json:"appURL"`
+	IsUserAccountComplete bool                  `json:"isUserAccountComplete"`
+	ClientID              string                `json:"clientID"`
+	QueryString           string                `json:"queryString"`
+	UserGroup             string                `json:"usergroup"`
+	Token                 string                `json:"token"`
+	Clients               []config.ClientConfig `json:"clients"`
+	Profile               *Profile              `json:"profile"`
+	Memberships           []Membership          `json:"memberships"`
+	Shares                []Share               `json:"shares"`
+	Products              []Product             `json:"products"`
+	CSRFToken             string                `json:"csrfToken"`
+	CountryList           []Country             `json:"countries"`
+	CurrentDate           time.Time             `json:"currentDate"`
+}
+
+func (state InitialState) toFragment() string {
+	initialState, err := json.Marshal(state)
+
+	if err != nil {
+		panic(err)
+	}
+
+	replacer := strings.NewReplacer(`'`, `\'`)
+
+	escaped := replacer.Replace(string(initialState))
+
+	// Inject initial state into frontend
+	fragment := fmt.Sprintf(
+		`<script>window.initialState=JSON.parse('%s')</script>`,
+		escaped,
+	)
+	return fragment
+}
+
+func NewGuestInitialState(
+	cnf *config.Config,
+) *InitialState {
+	return &InitialState{
+		Clients:     cnf.Clients,
+		StaticURL:   cnf.StaticURL,
+		AppURL:      cnf.AppURL,
+		CountryList: getCountryList(),
+		CurrentDate: time.Now(),
+	}
 }
 
 func NewInitialState(
@@ -103,34 +144,36 @@ func NewInitialState(
 	csrfToken string,
 	countryList []Country,
 ) *InitialState {
-	accessToken := ""
-
 	if userSession != nil {
-		accessToken = userSession.AccessToken
+		accessToken := userSession.AccessToken
+
+		profile := NewProfile(
+			user,
+			usergroups,
+			isUserAccountComplete,
+			credits,
+			userSession.Role,
+		)
+
+		return &InitialState{
+			ApplicationName:       client.ApplicationName.String,
+			ClientID:              client.Key,
+			StaticURL:             cnf.StaticURL,
+			AppURL:                cnf.AppURL,
+			IsUserAccountComplete: isUserAccountComplete,
+			Clients:               cnf.Clients,
+			Profile:               profile,
+			Token:                 accessToken,
+			Memberships:           memberships,
+			Shares:                shares,
+			Products:              products,
+			CSRFToken:             csrfToken,
+			CountryList:           countryList,
+			CurrentDate:           time.Now(),
+		}
 	}
 
-	profile := NewProfile(
-		user,
-		usergroups,
-		isUserAccountComplete,
-		credits,
-		userSession.Role,
+	return NewGuestInitialState(
+		cnf,
 	)
-
-	if len(usergroups) > 0 {
-		profile.DisplayName = usergroups[0].DisplayName
-	}
-
-	return &InitialState{
-		ApplicationName: client.ApplicationName.String,
-		ClientID:        client.Key,
-		Clients:         cnf.Clients,
-		Profile:         profile,
-		Token:           accessToken,
-		Memberships:     memberships,
-		Shares:          shares,
-		Products:        products,
-		CSRFToken:       csrfToken,
-		CountryList:     countryList,
-	}
 }

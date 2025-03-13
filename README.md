@@ -62,12 +62,43 @@ To compile the server run
 go install .
 ```
 
+## Templates (pug)
+
+```
+go install github.com/Joker/jade/cmd/jade@latest
+```
+
+```
+make generate
+```
+
 ## Run
 
 Run the server
 
 ```
 go run go-oauth2-server.go runserver
+```
+
+## Watch for changes
+
+First, you need to install gow
+
+```
+go install github.com/mitranim/gow@latest
+```
+
+Make sure $GOPATH/bin is in your $PATH
+
+```
+export GOPATH="$HOME/go"
+export PATH="$GOPATH/bin:$PATH"
+```
+
+Then run this command to watch template files and reruns on change
+
+```
+gow -g=./go.sh -v -c -e=html,pug,env run go-oauth2-server.go runserver
 ```
 
 ## Deploy

@@ -21,7 +21,7 @@ func (s *Service) GetRoutes() []routes.Route {
 			Name:        "home",
 			Method:      "GET",
 			Pattern:     "/",
-			HandlerFunc: s.homeForm,
+			HandlerFunc: s.indexForm,
 			Middlewares: []negroni.Handler{
 				new(parseFormMiddleware),
 				newGuestMiddleware(s),
@@ -48,7 +48,9 @@ func (s *Service) GetRoutes() []routes.Route {
 					tollbooth.NewLimiter(1, nil),
 				),
 				new(parseFormMiddleware),
-				newGuestMiddleware(s),
+				// newGuestMiddleware(s),
+				newLoggedInMiddleware(s),
+				newAdminMiddleware(s),
 				newClientMiddleware(s),
 			},
 		},
@@ -60,6 +62,19 @@ func (s *Service) GetRoutes() []routes.Route {
 			Middlewares: []negroni.Handler{
 				new(parseFormMiddleware),
 				newGuestMiddleware(s),
+				newClientMiddleware(s),
+			},
+		},
+		{
+			Name:        "contact_form",
+			Method:      "GET",
+			Pattern:     "/contact",
+			HandlerFunc: s.contactForm,
+			Middlewares: []negroni.Handler{
+				new(parseFormMiddleware),
+				// newGuestMiddleware(s),
+				newLoggedInMiddleware(s),
+				newAdminMiddleware(s),
 				newClientMiddleware(s),
 			},
 		},
@@ -360,45 +375,6 @@ func (s *Service) GetRoutes() []routes.Route {
 			Pattern:     "/profile",
 			HandlerFunc: s.profileForm,
 			Middlewares: []negroni.Handler{
-				new(parseFormMiddleware),
-				newLoggedInMiddleware(s),
-				newClientMiddleware(s),
-			},
-		},
-		{
-			Name:        "client_form",
-			Method:      "GET",
-			Pattern:     "/apps",
-			HandlerFunc: s.clientForm,
-			Middlewares: []negroni.Handler{
-				new(parseFormMiddleware),
-				newLoggedInMiddleware(s),
-				newClientMiddleware(s),
-			},
-		},
-		{
-			Name:        "client",
-			Method:      "POST",
-			Pattern:     "/apps",
-			HandlerFunc: s.client,
-			Middlewares: []negroni.Handler{
-				tollbooth_negroni.LimitHandler(
-					tollbooth.NewLimiter(1, nil),
-				),
-				new(parseFormMiddleware),
-				newLoggedInMiddleware(s),
-				newClientMiddleware(s),
-			},
-		},
-		{
-			Name:        "client_delete",
-			Method:      "DELETE",
-			Pattern:     "/apps",
-			HandlerFunc: s.clientDelete,
-			Middlewares: []negroni.Handler{
-				tollbooth_negroni.LimitHandler(
-					tollbooth.NewLimiter(1, nil),
-				),
 				new(parseFormMiddleware),
 				newLoggedInMiddleware(s),
 				newClientMiddleware(s),

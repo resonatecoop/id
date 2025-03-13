@@ -1,15 +1,11 @@
 package web
 
 import (
-	"encoding/json"
-	"fmt"
-	"html/template"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/gorilla/csrf"
-	"github.com/pariz/gountries"
 	"github.com/resonatecoop/id/config"
 	"github.com/resonatecoop/id/log"
 	"github.com/resonatecoop/id/session"
@@ -33,25 +29,15 @@ func (s *Service) accountForm(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-CSRF-Token", csrf.Token(r))
 
 	// Render the template
-	flash, _ := sessionService.GetFlashMessage()
+	flash, err := sessionService.GetFlashMessage()
 	query := r.URL.Query()
 	query.Set("login_redirect_uri", r.URL.Path)
 
-	q := gountries.New()
-	countries := q.FindAllCountries()
-
-	var countryList []Country
-
-	for i := range countries {
-		countryList = append(countryList, Country{
-			Name: countries[i].Name.Common,
-			Code: countries[i].Codes.Alpha2,
-		})
-	}
+	countryList := getCountryList()
 
 	usergroups, _ := s.getUserGroupList(user, userSession.AccessToken)
 
-	initialState, err := json.Marshal(NewInitialState(
+	state := NewInitialState(
 		s.cnf,
 		client,
 		user,
@@ -64,38 +50,29 @@ func (s *Service) accountForm(w http.ResponseWriter, r *http.Request) {
 		nil,
 		"",
 		countryList,
-	))
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Inject initial state into choo app
-	fragment := fmt.Sprintf(
-		`<script>window.initialState=JSON.parse('%s')</script>`,
-		string(initialState),
 	)
 
-	profile := NewProfile(user, usergroups.Usergroup, isUserAccountComplete, credits, userSession.Role)
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	err = renderTemplate(w, "account.html", map[string]interface{}{
-		"appURL":                s.cnf.AppURL,
-		"applicationName":       client.ApplicationName.String,
-		"clientID":              client.Key,
-		"countries":             countries,
-		"flash":                 flash,
-		"initialState":          template.HTML(fragment),
-		"isUserAccountComplete": isUserAccountComplete,
-		"profile":               profile,
-		"queryString":           getQueryString(query),
-		"staticURL":             s.cnf.StaticURL,
-		csrf.TemplateTag:        csrf.TemplateField(r),
-	})
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	title := "Create your account"
+
+	if isUserAccountComplete {
+		title = "Update your account"
 	}
+
+	Account(
+		s.cnf.IsDevelopment,
+		r.URL.Path,
+		getQueryString(query),
+		string(csrf.TemplateField(r)),
+		title,
+		"",
+		state.Profile,
+		flash,
+		state.toFragment(),
+		state,
+		w,
+	)
 }
 
 func (s *Service) account(w http.ResponseWriter, r *http.Request) {
@@ -120,7 +97,7 @@ func (s *Service) account(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if r.Form.Get("credits") != "" {
-			casted, err := strconv.ParseFloat(r.Form.Get("credits"), 10)
+			casted, err := strconv.ParseFloat(r.Form.Get("credits"), 32)
 
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -306,7 +283,7 @@ func (s *Service) getUserCredits(user *model.User, accessToken string) (
 	*models.UserUserCreditResponse,
 	error,
 ) {
-	client := config.NewAPIClient(s.cnf.UserAPIHostname, s.cnf.UserAPIPort)
+	client := config.NewAPIClient(s.cnf.UserAPI)
 
 	bearer := httptransport.BearerToken(accessToken)
 
@@ -333,7 +310,7 @@ func (s *Service) getUserGroupList(user *model.User, accessToken string) (
 	*models.UserUserGroupListResponse,
 	error,
 ) {
-	client := config.NewAPIClient(s.cnf.UserAPIHostname, s.cnf.UserAPIPort)
+	client := config.NewAPIClient(s.cnf.UserAPI)
 
 	bearer := httptransport.BearerToken(accessToken)
 
@@ -356,8 +333,12 @@ func (s *Service) getUserGroupList(user *model.User, accessToken string) (
 	return result.Payload, err
 }
 
-func (s *Service) createUserGroup(user *model.User, displayName, accessToken string) (*models.UserUserRequest, error) {
-	client := config.NewAPIClient(s.cnf.UserAPIHostname, s.cnf.UserAPIPort)
+func (s *Service) createUserGroup(
+	user *model.User,
+	displayName,
+	accessToken string,
+) (*models.UserUserRequest, error) {
+	client := config.NewAPIClient(s.cnf.UserAPI)
 
 	bearer := httptransport.BearerToken(accessToken)
 

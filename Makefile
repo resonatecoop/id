@@ -2,6 +2,21 @@
 # TODO: When Go 1.9 is released vendor folder should be ignored automatically
 PACKAGES=`go list ./... | grep -v vendor | grep -v mocks`
 
+generate:
+	jade -basedir=./web -writer -pkg=web -d=./web \
+		account.pug \
+		account_settings.pug \
+		authorize.pug \
+		checkout.pug \
+		contact.pug \
+		index.pug \
+		join.pug \
+		login.pug \
+		membership.pug \
+		password_reset.pug \
+		password_reset_update_password.pug \
+		profile.pug
+
 fmt:
 	for pkg in ${PACKAGES}; do \
 		go fmt $$pkg; \
