@@ -37,7 +37,7 @@ func (b *consulBackend) InitConfigBackend() {
 	}
 }
 
-//LoadConfig gets the JSON from Consul and unmarshals it to the config object
+// LoadConfig gets the JSON from Consul and unmarshals it to the config object
 func (b *consulBackend) LoadConfig() (*Config, error) {
 
 	cli, err := newConsulClient(consulEndpoint, consulCertFile, consulKeyFile, consulCaFile)
