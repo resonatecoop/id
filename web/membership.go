@@ -239,7 +239,6 @@ func (s *Service) membershipForm(w http.ResponseWriter, r *http.Request) {
 		usergroups.Usergroup,
 		memberships,
 		shares,
-		nil,
 		csrf.Token(r),
 		nil,
 	)

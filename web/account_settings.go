@@ -41,7 +41,6 @@ func (s *Service) accountSettingsForm(w http.ResponseWriter, r *http.Request) {
 		usergroups.Usergroup,
 		nil,
 		nil,
-		nil,
 		"",
 		nil,
 	)

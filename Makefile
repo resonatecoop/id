@@ -11,7 +11,6 @@ generate:
 		account.pug \
 		account_settings.pug \
 		authorize.pug \
-		checkout.pug \
 		contact.pug \
 		index.pug \
 		join.pug \

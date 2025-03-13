@@ -93,7 +93,6 @@ type InitialState struct {
 	Profile               *Profile              `json:"profile"`
 	Memberships           []Membership          `json:"memberships"`
 	Shares                []Share               `json:"shares"`
-	Products              []Product             `json:"products"`
 	CSRFToken             string                `json:"csrfToken"`
 	CountryList           []Country             `json:"countries"`
 	CurrentDate           time.Time             `json:"currentDate"`
@@ -140,7 +139,6 @@ func NewInitialState(
 	usergroups []*models.UserUserGroupPrivateResponse,
 	memberships []Membership,
 	shares []Share,
-	products []Product,
 	csrfToken string,
 	countryList []Country,
 ) *InitialState {
@@ -166,7 +164,6 @@ func NewInitialState(
 			Token:                 accessToken,
 			Memberships:           memberships,
 			Shares:                shares,
-			Products:              products,
 			CSRFToken:             csrfToken,
 			CountryList:           countryList,
 			CurrentDate:           time.Now(),

@@ -43,7 +43,6 @@ func (s *Service) authorizeForm(w http.ResponseWriter, r *http.Request) {
 		usergroups.Usergroup,
 		nil,
 		nil,
-		nil,
 		csrf.Token(r),
 		nil,
 	)
