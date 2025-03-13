@@ -1,6 +1,6 @@
 module github.com/resonatecoop/id
 
-go 1.22.0
+go 1.23.1
 
 require (
 	github.com/RichardKnop/jsonhal v0.0.0-20181101035658-9ef775cfa6bf
