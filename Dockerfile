@@ -1,6 +1,6 @@
 ARG RELEASE_TAG=develop 
 
-FROM golang:latest-alpine as builder
+FROM golang:alpine as builder
 
 ARG RELEASE_TAG
 
