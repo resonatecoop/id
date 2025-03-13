@@ -2,6 +2,10 @@
 # TODO: When Go 1.9 is released vendor folder should be ignored automatically
 PACKAGES=`go list ./... | grep -v vendor | grep -v mocks`
 
+install:
+	go install \
+		github.com/Joker/jade/cmd/jade@latest
+
 generate:
 	jade -basedir=./web -writer -pkg=web -d=./web \
 		account.pug \

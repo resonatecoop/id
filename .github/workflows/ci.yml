@@ -17,10 +17,16 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v2
       with:
-        go-version: 1.15
+        go-version: 1.23
 
     - name: Basic checks before building and testing
       run: ./run_basic_checks.sh
+
+    - name: Install tooling
+      run: make install
+
+    - name: Generate files
+      run: make generate
 
     - name: Build
       run: go build -v ./...
