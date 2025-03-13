@@ -1,0 +1,93 @@
+extends layout
+
+block header
+  include header
+
+block content
+  :go:func
+    AccountSettings(
+      isDevelopment bool,
+      path,
+      query,
+      csrfField,
+      title,
+      description string,
+      profile *Profile,
+      flash *session.Flash,
+      fragment string,
+      state *InitialState
+    )
+
+  if flash.Message != ""
+    .sticky.top-0.z-999.mb3.flex(class='')
+      p.ma0.pa3.w-100 #{flash.Message}
+
+  .flex.flex-column.w-100.pb6.mh3.mh0-ns
+    section#profile.flex.flex-column
+      h2.lh-title.pl3.f2.fw1 Account settings
+      .flex.flex-column.flex-row-l
+        .w-50.w-third-l.ph3
+          nav.sticky.z-1.flex.flex-column(style='top:3rem')
+            ul.list.ma0.pa0.mt3.flex.flex-column
+              li.mb2
+                a.link(href='#change-email') Email
+              li.mb2
+                a.link(href='#change-password') Password
+              li
+                a.link(href='#delete-account') Delete account
+        .flex.flex-column.flex-auto.ph3.mw6.ph0-l
+          .ph3
+            h3.f3.fw1.lh-title.relative.mb3
+              | Change email
+              a#change-email.absolute(style='top:-120px')
+            .flex.flex-column.flex-auto.pb6
+              form(action='' method='POST')
+                !=csrfField
+                input(type='hidden' name='_method' value='PUT')
+                .mb3
+                  .flex.flex-column.flex-column-reverse
+                    input#password_current_email.bg-black.white.bg-white--dark.black--dark.bg-black--light.white--light.placeholder--dark-gray.input-reset.w-100.bn.pa3.valid(value='' autocomplete='false' type='password' name='password' placeholder='Current password' required='required')
+                  p.lh-copy.f5.red
+                .mb3
+                  .flex.flex-column.flex-column-reverse
+                    input#email.bg-black.white.bg-white--dark.black--dark.bg-black--light.white--light.placeholder--dark-gray.input-reset.w-100.bn.pa3.valid(value=profile.Email autocomplete='false' type='text' name='email' placeholder='E-mail' required='required')
+                  p.lh-copy.f5.red
+                .flex.flex-auto
+                  button.bg-white.dib.bn.pv3.ph5.flex-shrink-0.f5.grow(style='outline:solid 1px var(--near-black);outline-offset:-1px' type='submit') Update my email
+          .ph3
+            h3.f3.fw1.lh-title.relative.mb3
+              | Change password
+              a#change-password.absolute(style='top:-120px')
+            .flex.flex-column.flex-auto.pb6
+              form(action='/password' + query method='POST')
+                !=csrfField
+                .mb3
+                  .flex.flex-column.flex-column-reverse
+                    input#password_current.bg-black.white.bg-white--dark.black--dark.bg-black--light.white--light.placeholder--dark-gray.input-reset.w-100.bn.pa3.valid(value='' autocomplete='false' type='password' name='password' placeholder='Current password' required='required')
+                  p.lh-copy.f5.red
+                .mb3
+                  .flex.flex-column.flex-column-reverse
+                    input#password_new.bg-black.white.bg-white--dark.black--dark.bg-black--light.white--light.placeholder--dark-gray.input-reset.w-100.bn.pa3.valid(value='' autocomplete='false' type='password' name='password_new' placeholder='New password' required='required')
+                  p.lh-copy.f5.red
+                .mb3
+                  .flex.flex-column.flex-column-reverse
+                    input#password_confirm.bg-black.white.bg-white--dark.black--dark.bg-black--light.white--light.placeholder--dark-gray.input-reset.w-100.bn.pa3.valid(value='' autocomplete='false' type='password' name='password_confirm' placeholder='Password verification' required='required')
+                  p.lh-copy.f5.red
+                .flex.flex-auto
+                  button.bg-white.dib.bn.pv3.ph5.flex-shrink-0.f5.grow(style='outline:solid 1px var(--near-black);outline-offset:-1px' type='submit') Update my password
+          .flex.w-100.items-center.ph3
+            a#delete-account
+            form#delete-profile.ma0.pa0(action='' method='POST')
+              !=csrfField
+              input(type='hidden' name='_method' value='DELETE')
+              label.f4.db.mv2(for='password_delete')
+                .flex.items-center
+                  span Current password
+              .mb3
+                input#password_delete.bg-black.white.bg-white--dark.black--dark.bg-black--light.white--light.placeholder--dark-gray.input-reset.w-100.bn.pa3.valid(type='password' autocomplete='on' required='required' placeholder='' name='password' value='')
+              button.bg-white.ba.bw.b--dark-gray.f5.b.pv3.ph3.w-100.mw5.grow.flex-shrink-0.f5.grow(type='submit')
+                | Delete account
+              p.lh-copy.f5.dark-gray This will delete your account and all associated profiles.
+
+block footer
+  include footer

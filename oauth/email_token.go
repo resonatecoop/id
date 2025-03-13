@@ -10,6 +10,7 @@ import (
 	jwt "github.com/form3tech-oss/jwt-go"
 	uuid "github.com/google/uuid"
 	"github.com/mailgun/mailgun-go/v4"
+	"github.com/resonatecoop/id/log"
 	"github.com/resonatecoop/id/util"
 	"github.com/resonatecoop/user-api/model"
 	"github.com/uptrace/bun"
@@ -91,7 +92,7 @@ func (s *Service) SendEmailTokenTx(
 }
 
 // CreateEmailToken ...
-func (s *Service) CreateEmailToken(email string) (*model.EmailToken, error) {
+func (s *Service) CreateEmailToken() (*model.EmailToken, error) {
 	expiresIn := 30 * time.Minute // 30 minutes
 
 	emailToken := model.NewOauthEmailToken(&expiresIn)
@@ -116,6 +117,11 @@ func (s *Service) CreateEmailToken(email string) (*model.EmailToken, error) {
 	}
 
 	return emailToken, nil
+}
+
+// CreateJwtTokenWithEmailTokenClaims ...
+func (s *Service) CreateJwtEmailTokenClaims(claims *model.EmailTokenClaims) (string, error) {
+	return s.createJwtTokenWithEmailTokenClaims(claims)
 }
 
 // createJwtTokenWithEmailTokenClaims ...
@@ -153,7 +159,7 @@ func (s *Service) sendEmailTokenCommon(
 
 	recipient := email.Recipient
 
-	emailToken, err := s.CreateEmailToken(recipient)
+	emailToken, err := s.CreateEmailToken()
 
 	if err != nil {
 		return nil, err
@@ -189,26 +195,25 @@ func (s *Service) sendEmailTokenCommon(
 		return nil, err
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
+	go func() {
+		// Send the message with a 10 second timeout
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+		defer cancel()
 
-	// Send the message with a 10 second timeout
-	_, _, err = mg.Send(ctx, message)
+		_, _, err = mg.Send(ctx, message)
+		if err == nil {
+			_, err = s.db.NewUpdate().
+				Model(emailToken).
+				Set("email_sent = ?", true).
+				Set("email_sent_at = ?", time.Now().UTC()).
+				Where("reference = ?", emailToken.Reference).
+				Exec(ctx)
+		}
 
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = s.db.NewUpdate().
-		Model(emailToken).
-		Set("email_sent = ?", true).
-		Set("email_sent_at = ?", time.Now().UTC()).
-		Where("reference = ?", emailToken.Reference).
-		Exec(ctx)
-
-	if err != nil {
-		return nil, err
-	}
+		if err != nil {
+			log.ERROR.Print(err)
+		}
+	}()
 
 	return emailToken, nil
 }
@@ -237,8 +242,7 @@ func (s *Service) ClearExpiredEmailTokens() error {
 func (s *Service) DeleteEmailToken(emailToken *model.EmailToken, soft bool) error {
 	ctx := context.Background()
 
-	if soft {
-
+	if soft == true {
 		_, err := s.db.NewDelete().
 			Model(emailToken).
 			WherePK().

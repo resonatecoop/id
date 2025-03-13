@@ -1,0 +1,41 @@
+extends layout
+
+block header
+  include header
+
+block content
+  :go:func
+    Index(
+      isDevelopment bool,
+      path,
+      query,
+      csrfField,
+      title,
+      description string,
+      profile *Profile,
+      flash *session.Flash,
+      fragment string,
+      state *InitialState
+    )
+
+  if flash.Message != ""
+    .sticky.top-0.z-999.mb3.flex(class='')
+      p.ma0.pa3.w-100 #{flash.Message}
+
+  section.flex.flex-auto.flex-column.w-100.pb6
+    h2.lh-title.mt5.f3.fw1.ml3 Log in to Resonate
+    article
+      h3.ma0.pa0.clip Apps
+      ul.list.ma0.pa0.mh2.mt3.cf
+        each client in state.Clients
+          li.fl.w-100.w-50-ns.w-33-l.pa2
+            a.link.db.aspect-ratio.aspect-ratio--1x1.dim.ba.bw.b--near-black(href=client.ConnectUrl)
+              dl.flex.flex-column.justify-center.aspect-ratio--object.pa3.pa4-l
+                dt.f3.lh-title=client.Name
+                dd.ma0.f4.f5-ns.f4-l.lh-copy=client.Description
+    aside
+      p.ml3.lh-copy.measure.f4.f5-ns.f4-l Not a member yet? 
+        a.link.b(href='/join') Join now!
+
+block footer
+  include footer

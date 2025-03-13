@@ -8,23 +8,25 @@ import (
 
 // AccessTokenResponse ...
 type AccessTokenResponse struct {
-	UserID       string `json:"user_id,omitempty"`
-	AccessToken  string `json:"access_token"`
-	ExpiresIn    int    `json:"expires_in"`
-	TokenType    string `json:"token_type"`
-	Scope        string `json:"scope"`
-	RefreshToken string `json:"refresh_token,omitempty"`
+	UserID         string `json:"user_id,omitempty"`
+	AccessToken    string `json:"access_token"`
+	EmailConfirmed bool   `json:"email_confirmed,omitempty"`
+	ExpiresIn      int    `json:"expires_in"`
+	TokenType      string `json:"token_type"`
+	Scope          string `json:"scope"`
+	RefreshToken   string `json:"refresh_token,omitempty"`
 }
 
 // IntrospectResponse ...
 type IntrospectResponse struct {
-	UserID    string `json:"user_id,omitempty"`
-	Active    bool   `json:"active"`
-	Scope     string `json:"scope,omitempty"`
-	ClientID  string `json:"client_id,omitempty"`
-	Username  string `json:"username,omitempty"`
-	TokenType string `json:"token_type,omitempty"`
-	ExpiresAt int    `json:"exp,omitempty"`
+	UserID         string `json:"user_id,omitempty"`
+	Active         bool   `json:"active"`
+	EmailConfirmed bool   `json:"email_confirmed,omitempty"`
+	Scope          string `json:"scope,omitempty"`
+	ClientID       string `json:"client_id,omitempty"`
+	Username       string `json:"username,omitempty"`
+	TokenType      string `json:"token_type,omitempty"`
+	ExpiresAt      int    `json:"exp,omitempty"`
 }
 
 // NewAccessTokenResponse ...
@@ -34,6 +36,9 @@ func NewAccessTokenResponse(accessToken *model.AccessToken, refreshToken *model.
 		ExpiresIn:   lifetime,
 		TokenType:   theTokenType,
 		Scope:       accessToken.Scope,
+	}
+	if accessToken.User != nil {
+		response.EmailConfirmed = accessToken.User.EmailConfirmed
 	}
 	if util.IsValidUUID(accessToken.UserID.String()) && accessToken.UserID != uuid.Nil {
 		response.UserID = accessToken.UserID.String()

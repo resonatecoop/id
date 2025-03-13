@@ -71,6 +71,12 @@ type StripeConfig struct {
 	StreamCredit5        Product
 }
 
+type UserAPIConfig struct {
+	Hostname           string
+	Port               string
+	InsecureSkipVerify bool
+}
+
 // Config stores all configuration options
 type Config struct {
 	Hostname            string
@@ -85,8 +91,7 @@ type Config struct {
 	ApplicationURL      string
 	Origins             []string
 	EmailTokenSecretKey string
-	UserAPIHostname     string
-	UserAPIPort         string
+	UserAPI             UserAPIConfig
 	StaticURL           string
 	AppURL              string
 	Stripe              StripeConfig

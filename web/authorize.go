@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"html/template"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -28,14 +27,13 @@ func (s *Service) authorizeForm(w http.ResponseWriter, r *http.Request) {
 
 	isUserAccountComplete := s.isUserAccountComplete(userSession)
 
-	// Render the template
 	flash, _ := sessionService.GetFlashMessage()
 	query := r.URL.Query()
 	query.Set("login_redirect_uri", r.URL.Path)
 
 	usergroups, _ := s.getUserGroupList(user, userSession.AccessToken)
 
-	initialState, err := json.Marshal(NewInitialState(
+	state := NewInitialState(
 		s.cnf,
 		client,
 		user,
@@ -45,10 +43,11 @@ func (s *Service) authorizeForm(w http.ResponseWriter, r *http.Request) {
 		usergroups.Usergroup,
 		nil,
 		nil,
-		nil,
 		csrf.Token(r),
 		nil,
-	))
+	)
+
+	initialState, err := json.Marshal(state)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -67,38 +66,34 @@ func (s *Service) authorizeForm(w http.ResponseWriter, r *http.Request) {
 		usergroupList = append(usergroupList, UserGroup{
 			ID:          usergroups.Usergroup[i].ID,
 			DisplayName: usergroups.Usergroup[i].DisplayName,
+			Avatar:      usergroups.Usergroup[i].Avatar,
 		})
 	}
 
-	profile := &Profile{
-		Email:          user.Username,
-		EmailConfirmed: user.EmailConfirmed,
-		LegacyID:       user.LegacyID,
-		Complete:       isUserAccountComplete,
-		Usergroups:     usergroupList,
-	}
+	profile := NewProfile(
+		user,
+		usergroups.Usergroup,
+		isUserAccountComplete,
+		credits,
+		userSession.Role,
+	)
 
-	if len(usergroups.Usergroup) > 0 {
-		profile.DisplayName = usergroups.Usergroup[0].DisplayName
-	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	err = renderTemplate(w, "authorize.html", map[string]interface{}{
-		"appURL":                s.cnf.AppURL,
-		"applicationName":       client.ApplicationName.String,
-		"clientID":              client.Key,
-		"flash":                 flash,
-		"initialState":          template.HTML(fragment),
-		"isUserAccountComplete": isUserAccountComplete,
-		"profile":               profile,
-		"queryString":           getQueryString(query),
-		"staticURL":             s.cnf.StaticURL,
-		"token":                 responseType == "token",
-		csrf.TemplateTag:        csrf.TemplateField(r),
-	})
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	Authorize(
+		s.cnf.IsDevelopment,
+		r.URL.Path,
+		getQueryString(query),
+		string(csrf.TemplateField(r)),
+		"Authorize",
+		"",
+		profile,
+		flash,
+		fragment,
+		state,
+		responseType,
+		w,
+	)
 }
 
 func (s *Service) authorize(w http.ResponseWriter, r *http.Request) {
@@ -229,19 +224,6 @@ func (s *Service) authorizeCommon(r *http.Request) (
 	if err != nil {
 		return nil, nil, nil, nil, "", "", nil, err
 	}
-
-	// Fetch the user
-	// user, err := s.oauthService.FindUserByEmail(
-	// 	userSession.Username,
-	// )
-	// if err != nil {
-	// 	return nil, nil, nil, "", "", nil, err
-	// }
-
-	// nickname, err := s.oauthService.FindNicknameByWpUserID(wpuser.ID)
-	// if err != nil {
-	// 	return nil, nil, nil, "", "", nil, err
-	// }
 
 	// Set default response type
 	responseType := "code"

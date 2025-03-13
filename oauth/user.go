@@ -209,34 +209,33 @@ func (s *Service) deleteUserCommon(db *bun.DB, user *model.User, password string
 		return ErrAccountDeletionFailed
 	}
 
-	// Inform user account is scheduled for deletion
-	mg := mailgun.NewMailgun(s.cnf.Mailgun.Domain, s.cnf.Mailgun.Key)
-	sender := s.cnf.Mailgun.Sender
-	body := ""
-	email := model.NewOauthEmail(
-		user.Username,
-		"Account deleted",
-		"account-deleted",
-	)
-	subject := email.Subject
-	recipient := email.Recipient
-	message := mg.NewMessage(sender, subject, body, recipient)
-	message.SetTemplate(email.Template) // set mailgun template
-	err = message.AddTemplateVariable("email", recipient)
+	go func() {
+		// Inform user account is scheduled for deletion
+		mg := mailgun.NewMailgun(s.cnf.Mailgun.Domain, s.cnf.Mailgun.Key)
+		sender := s.cnf.Mailgun.Sender
+		body := ""
+		email := model.NewOauthEmail(
+			user.Username,
+			"Account deleted",
+			"account-deleted",
+		)
+		subject := email.Subject
+		recipient := email.Recipient
+		message := mg.NewMessage(sender, subject, body, recipient)
+		message.SetTemplate(email.Template) // set mailgun template
+		err = message.AddTemplateVariable("email", recipient)
 
-	if err != nil {
-		log.ERROR.Print(err)
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-
-	// Send the message with a 10 second timeout
-	_, _, err = mg.Send(ctx, message)
-
-	if err != nil {
-		log.ERROR.Print(err)
-	}
+		if err != nil {
+			log.ERROR.Print(err)
+		}
+		// Send the message with a 10 second timeout
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+		defer cancel()
+		_, _, err = mg.Send(ctx, message)
+		if err != nil {
+			log.ERROR.Print(err)
+		}
+	}()
 
 	return nil
 }

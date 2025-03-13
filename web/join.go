@@ -1,10 +1,8 @@
 package web
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"html/template"
 	"net/http"
 
 	"github.com/resonatecoop/id/config"
@@ -16,7 +14,6 @@ import (
 	"github.com/resonatecoop/user-api/model"
 
 	"github.com/gorilla/csrf"
-	"github.com/pariz/gountries"
 
 	"github.com/resonatecoop/user-api-client/client/users"
 	"github.com/resonatecoop/user-api-client/models"
@@ -42,43 +39,29 @@ func (s *Service) joinForm(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("X-CSRF-Token", csrf.Token(r))
 
-	q := gountries.New()
-	countries := q.FindAllCountries()
-
-	var countryList []Country
-
-	for i := range countries {
-		countryList = append(countryList, Country{
-			Name: countries[i].Name.Common,
-			Code: countries[i].Codes.Alpha2,
-		})
-	}
-
-	initialState, _ := json.Marshal(map[string]interface{}{
-		"clients":   s.cnf.Clients,
-		"countries": countryList,
-	})
-
-	// Inject initial state into choo app
-	fragment := fmt.Sprintf(
-		`<script>window.initialState=JSON.parse('%s')</script>`,
-		string(initialState),
+	state := NewGuestInitialState(
+		s.cnf,
 	)
 
 	// Render the template
 	flash, _ := sessionService.GetFlashMessage()
-	err = renderTemplate(w, "join.html", map[string]interface{}{
-		"appURL":         s.cnf.AppURL,
-		"countries":      countries,
-		"flash":          flash,
-		"initialState":   template.HTML(fragment),
-		"queryString":    getQueryString(r.URL.Query()),
-		csrf.TemplateTag: csrf.TemplateField(r),
-	})
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	query := r.URL.Query()
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	Join(
+		s.cnf.IsDevelopment,
+		r.URL.Path,
+		getQueryString(query),
+		string(csrf.TemplateField(r)),
+		"Join",
+		"Join Resonate",
+		&Profile{},
+		flash,
+		state.toFragment(),
+		state,
+		w,
+	)
 }
 
 func (s *Service) join(w http.ResponseWriter, r *http.Request) {
@@ -109,6 +92,24 @@ func (s *Service) join(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	go func() {
+		_, err = s.oauthService.SendEmailToken(
+			model.NewOauthEmail(
+				r.Form.Get("email"), // Recipient
+				"Member details",    // Subject
+				"signup",            // Template (mailgun)
+			),
+			fmt.Sprintf(
+				"https://%s/email-confirmation",
+				s.cnf.Hostname,
+			),
+		)
+
+		if err != nil {
+			log.ERROR.Print(err)
+		}
+	}()
+
 	message := fmt.Sprintf(
 		"A confirmation email will be sent to %s", user.Username,
 	)
@@ -124,22 +125,6 @@ func (s *Service) join(w http.ResponseWriter, r *http.Request) {
 		query.Set("login_redirect_uri", "/web/profile")
 		redirectWithQueryString("/web/login", query, w, r)
 	}
-
-	_, err = s.oauthService.SendEmailToken(
-		model.NewOauthEmail(
-			r.Form.Get("email"), // Recipient
-			"Member details",    // Subject
-			"signup",            // Template (mailgun)
-		),
-		fmt.Sprintf(
-			"https://%s/email-confirmation",
-			s.cnf.Hostname,
-		),
-	)
-
-	if err != nil {
-		log.ERROR.Print(err)
-	}
 }
 
 func (s *Service) createUser(r *http.Request) (
@@ -147,7 +132,9 @@ func (s *Service) createUser(r *http.Request) (
 	error,
 ) {
 	// first validate password before calling user-api
-	if err := password.ValidatePassword(r.Form.Get("password")); err != nil {
+	err := password.ValidatePassword(r.Form.Get("password"))
+
+	if err != nil {
 		return nil, err
 	}
 
@@ -156,7 +143,7 @@ func (s *Service) createUser(r *http.Request) (
 		return nil, ErrEmailInvalid
 	}
 
-	client := config.NewAPIClient(s.cnf.UserAPIHostname, s.cnf.UserAPIPort)
+	client := config.NewAPIClient(s.cnf.UserAPI)
 
 	params := users.NewResonateUserAddUserParams()
 
@@ -174,13 +161,14 @@ func (s *Service) createUser(r *http.Request) (
 	//}
 
 	// Create a user
-	_, err := client.Users.ResonateUserAddUser(params, nil)
+	_, err = client.Users.ResonateUserAddUser(params, nil)
 
 	if err != nil {
-		if casted, ok := err.(*users.ResonateUserAddUserDefault); ok {
-			err = errors.New(casted.Payload.Message)
-			return nil, err
-		}
+		return nil, err
+		// if casted, ok := err.(*users.ResonateUserAddUserDefault); ok {
+		// 	err = errors.New(casted.Payload.Message)
+		// 	return nil, err
+		// }
 	}
 
 	user, err := s.oauthService.FindUserByUsername(r.Form.Get("email"))

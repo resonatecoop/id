@@ -189,6 +189,33 @@ func (m *loggedInMiddleware) authenticate(userSession *session.UserSession) erro
 	return nil
 }
 
+type adminMiddleware struct {
+	service ServiceInterface
+}
+
+func newAdminMiddleware(service ServiceInterface) *adminMiddleware {
+	return &adminMiddleware{service: service}
+}
+
+func (m *adminMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+	sessionService := m.service.GetSessionService()
+	userSession, err := sessionService.GetUserSession()
+
+	if err != nil {
+		query := r.URL.Query()
+		query.Set("login_redirect_uri", r.URL.Path)
+		redirectWithQueryString("/web/login", query, w, r)
+		return
+	}
+
+	if userSession.Role != "admin" {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	next(w, r)
+}
+
 // clientMiddleware takes client_id param from the query string and
 // makes a database lookup for a client with the same client ID
 type clientMiddleware struct {

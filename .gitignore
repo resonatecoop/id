@@ -6,7 +6,19 @@ postgres-data
 coverage*
 *.d
 
+# Binary
+id
+
+docker-etcd-config-entrypoint.sh
 *.env
+
+# generated
+*.pug.go
+
+# Dev server
+*.cert
+*.key
+
 htpasswd/
 nginx-conf/
 dhparam/

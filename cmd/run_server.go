@@ -29,7 +29,7 @@ func RunServer(configBackend string) error {
 	defer services.Close()
 
 	secureMiddleware := secure.New(secure.Options{
-		FrameDeny:          false, // already set in web/render.go
+		FrameDeny:          true,
 		ContentTypeNosniff: true,
 		BrowserXssFilter:   true,
 		IsDevelopment:      cnf.IsDevelopment,
@@ -48,7 +48,6 @@ func RunServer(configBackend string) error {
 	// Add routes
 	services.HealthService.RegisterRoutes(router, "/v1")
 	services.OauthService.RegisterRoutes(router, "/v1/oauth")
-	services.WebHookService.RegisterRoutes(router, "/webhook")
 
 	webRoutes := mux.NewRouter()
 	services.WebService.RegisterRoutes(webRoutes, "/web")

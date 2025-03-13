@@ -91,7 +91,7 @@ func (s *Service) NewIntrospectResponseFromAccessToken(accessToken *model.Access
 		user := new(model.User)
 		err := s.db.NewSelect().
 			Model(user).
-			Column("username").
+			Column("username", "email_confirmed").
 			Where("id = ?", accessToken.UserID.String()).
 			Limit(1).
 			Scan(ctx)
@@ -99,6 +99,7 @@ func (s *Service) NewIntrospectResponseFromAccessToken(accessToken *model.Access
 			return nil, ErrUserNotFound
 		}
 
+		introspectResponse.EmailConfirmed = user.EmailConfirmed
 		introspectResponse.Username = user.Username
 		introspectResponse.UserID = accessToken.UserID.String()
 	}
@@ -134,7 +135,7 @@ func (s *Service) NewIntrospectResponseFromRefreshToken(refreshToken *model.Refr
 		user := new(model.User)
 		err := s.db.NewSelect().
 			Model(user).
-			Column("username").
+			Column("username", "email_confirmed").
 			Where("id = ?", refreshToken.UserID.String()).
 			Limit(1).
 			Scan(ctx)
@@ -143,6 +144,7 @@ func (s *Service) NewIntrospectResponseFromRefreshToken(refreshToken *model.Refr
 		}
 
 		introspectResponse.Username = user.Username
+		introspectResponse.EmailConfirmed = user.EmailConfirmed
 		introspectResponse.UserID = refreshToken.UserID.String()
 	}
 

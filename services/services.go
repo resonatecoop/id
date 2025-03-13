@@ -9,7 +9,6 @@ import (
 	"github.com/resonatecoop/id/oauth"
 	"github.com/resonatecoop/id/session"
 	"github.com/resonatecoop/id/web"
-	"github.com/resonatecoop/id/webhook"
 	"github.com/uptrace/bun"
 )
 
@@ -27,9 +26,6 @@ var (
 	// WebService ...
 	WebService web.ServiceInterface
 
-	// WebHookService ...
-	WebHookService webhook.ServiceInterface
-
 	// SessionService ...
 	SessionService session.ServiceInterface
 )
@@ -42,11 +38,6 @@ func UseHealthService(h health.ServiceInterface) {
 // UseOauthService sets the oAuth service
 func UseOauthService(o oauth.ServiceInterface) {
 	OauthService = o
-}
-
-// UseWebHookService sets the web service
-func UseWebHookService(w webhook.ServiceInterface) {
-	WebHookService = w
 }
 
 // UseWebService sets the web service
@@ -87,10 +78,6 @@ func Init(cnf *config.Config, db *bun.DB) error {
 		WebService = web.NewService(cnf, OauthService, SessionService)
 	}
 
-	if nil == reflect.TypeOf(WebHookService) {
-		WebHookService = webhook.NewService(cnf, db, OauthService)
-	}
-
 	return nil
 }
 
@@ -98,7 +85,6 @@ func Init(cnf *config.Config, db *bun.DB) error {
 func Close() {
 	HealthService.Close()
 	OauthService.Close()
-	WebHookService.Close()
 	WebService.Close()
 	SessionService.Close()
 }

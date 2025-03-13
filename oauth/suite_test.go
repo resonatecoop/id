@@ -26,9 +26,9 @@ var (
 	// 	"./oauth/fixtures/test_users.yml",
 	// }
 
-// 	testMigrations = []func(*bun.DB) error{
-// 		model.MigrateAll,
-// 	}
+//	testMigrations = []func(*bun.DB) error{
+//		model.MigrateAll,
+//	}
 )
 
 func init() {

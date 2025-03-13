@@ -61,6 +61,7 @@ func (s *Service) GrantAccessToken(client *model.Client, user *model.User, expir
 		accessToken.UserID = uuid.Nil
 	} else {
 		accessToken.UserID = user.ID
+		accessToken.User = user
 	}
 
 	// Commit the transaction

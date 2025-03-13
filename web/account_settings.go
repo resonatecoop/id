@@ -1,9 +1,6 @@
 package web
 
 import (
-	"encoding/json"
-	"fmt"
-	"html/template"
 	"net/http"
 	"strings"
 
@@ -22,13 +19,19 @@ func (s *Service) accountSettingsForm(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-CSRF-Token", csrf.Token(r))
 
 	// Render the template
-	flash, _ := sessionService.GetFlashMessage()
+	flash, err := sessionService.GetFlashMessage()
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	query := r.URL.Query()
 	query.Set("login_redirect_uri", r.URL.Path)
 
 	usergroups, _ := s.getUserGroupList(user, userSession.AccessToken)
 
-	initialState, err := json.Marshal(NewInitialState(
+	state := NewInitialState(
 		s.cnf,
 		client,
 		user,
@@ -38,40 +41,25 @@ func (s *Service) accountSettingsForm(w http.ResponseWriter, r *http.Request) {
 		usergroups.Usergroup,
 		nil,
 		nil,
-		nil,
 		"",
 		nil,
-	))
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Inject initial state into choo app
-	fragment := fmt.Sprintf(
-		`<script>window.initialState=JSON.parse('%s')</script>`,
-		string(initialState),
 	)
 
-	profile := NewProfile(user, usergroups.Usergroup, isUserAccountComplete, credits, userSession.Role)
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	err = renderTemplate(w, "account_settings.html", map[string]interface{}{
-		"appURL":                s.cnf.AppURL,
-		"applicationName":       client.ApplicationName.String,
-		"clientID":              client.Key,
-		"flash":                 flash,
-		"initialState":          template.HTML(fragment),
-		"isUserAccountComplete": isUserAccountComplete,
-		"profile":               profile,
-		"queryString":           getQueryString(query),
-		"staticURL":             s.cnf.StaticURL,
-		csrf.TemplateTag:        csrf.TemplateField(r),
-	})
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	AccountSettings(
+		s.cnf.IsDevelopment,
+		r.URL.Path,
+		getQueryString(query),
+		string(csrf.TemplateField(r)),
+		"Account settings",
+		"",
+		state.Profile,
+		flash,
+		state.toFragment(),
+		state,
+		w,
+	)
 }
 
 func (s *Service) accountSettings(w http.ResponseWriter, r *http.Request) {

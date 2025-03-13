@@ -1,14 +1,11 @@
 package web
 
 import (
-	"encoding/json"
 	"fmt"
-	"html/template"
 	"net/http"
 	"strings"
 
 	"github.com/gorilla/csrf"
-	"github.com/resonatecoop/id/oauth"
 	"github.com/resonatecoop/id/session"
 	"github.com/resonatecoop/id/util/response"
 	"github.com/resonatecoop/user-api/model"
@@ -21,26 +18,18 @@ func (s *Service) passwordResetForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("X-CSRF-Token", csrf.Token(r))
-
-	initialState, _ := json.Marshal(map[string]interface{}{
-		"clients": s.cnf.Clients,
-	})
-
-	// Inject initial state into choo app
-	fragment := fmt.Sprintf(
-		`<script>window.initialState=JSON.parse('%s')</script>`,
-		string(initialState),
+	state := NewGuestInitialState(
+		s.cnf,
 	)
 
-	layoutTemplate := "password_reset.html"
+	query := r.URL.Query()
 	token := r.Form.Get("token")
 
 	if token != "" {
-		_, _, err = s.oauthService.GetValidEmailToken(
+		emailToken, user, err := s.oauthService.GetValidEmailToken(
 			token,
 		)
-		// TODO renew if close to expiration time ?
+
 		if err != nil {
 			err = sessionService.SetFlashMessage(&session.Flash{
 				Type:    "Error",
@@ -50,27 +39,79 @@ func (s *Service) passwordResetForm(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			query := r.URL.Query()
 			query.Del("token")
 			redirectWithQueryString("/web/password-reset", query, w, r)
 			return
 		}
-		layoutTemplate = "password_reset_update_password.html"
+
+		// we delete the validated email token
+		err = s.oauthService.DeleteEmailToken(emailToken, true)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// we creates a new one without sending
+		emailToken, err = s.oauthService.CreateEmailToken()
+
+		email := user.Username
+		claims := model.NewOauthEmailTokenClaims(email, emailToken)
+
+		token, err := s.oauthService.CreateJwtEmailTokenClaims(claims)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("X-CSRF-Token", csrf.Token(r))
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+		flash, err := sessionService.GetFlashMessage()
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		PasswordResetUpdatePassword(
+			s.cnf.IsDevelopment,
+			r.URL.Path,
+			getQueryString(query),
+			string(csrf.TemplateField(r)),
+			"Update your password",
+			"",
+			&Profile{},
+			flash,
+			state.toFragment(),
+			state,
+			token,
+			w,
+		)
+		return
 	}
 
-	flash, _ := sessionService.GetFlashMessage()
+	flash, err := sessionService.GetFlashMessage()
 
-	err = renderTemplate(w, layoutTemplate, map[string]interface{}{
-		"token":          token,
-		"flash":          flash,
-		"clients":        s.cnf.Clients,
-		"initialState":   template.HTML(fragment),
-		csrf.TemplateTag: csrf.TemplateField(r),
-	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	PasswordReset(
+		s.cnf.IsDevelopment,
+		r.URL.Path,
+		getQueryString(query),
+		string(csrf.TemplateField(r)),
+		"Reset your password",
+		"",
+		&Profile{},
+		flash,
+		state.toFragment(),
+		state,
+		w,
+	)
 }
 
 func (s *Service) passwordReset(w http.ResponseWriter, r *http.Request) {
@@ -124,46 +165,22 @@ func (s *Service) passwordReset(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// send password reset token
-	_, err = s.oauthService.SendEmailToken(
-		model.NewOauthEmail(
-			r.Form.Get("email"),
-			"Reset your password",
-			"password-reset",
-		),
-		fmt.Sprintf(
-			"https://%s/password-reset",
-			s.cnf.Hostname,
-		),
-	)
+	go func() {
+		_, _ = s.oauthService.SendEmailToken(
+			model.NewOauthEmail(
+				r.Form.Get("email"),
+				"Reset your password",
+				"password-reset",
+			),
+			fmt.Sprintf(
+				"https://%s/password-reset",
+				s.cnf.Hostname,
+			),
+		)
+		// maybe log something later
+	}()
 
-	if err != nil {
-		status := http.StatusBadRequest
-
-		switch err {
-		case oauth.ErrUsernameRequired:
-		case oauth.ErrEmailNotFound:
-			status = http.StatusNotFound
-		default:
-			status = http.StatusInternalServerError // assume email could not be sent
-		}
-
-		if r.Header.Get("Accept") == "application/json" {
-			response.Error(w, err.Error(), status)
-			return
-		}
-		err = sessionService.SetFlashMessage(&session.Flash{
-			Type:    "Error",
-			Message: err.Error(),
-		})
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		http.Redirect(w, r, r.RequestURI, http.StatusFound)
-		return
-	}
-
-	message := "We have sent you a password reset link to your e-mail. Please check your inbox"
+	message := "If you do have a Resonate account, you should receive an email shortly"
 
 	if r.Header.Get("Accept") == "application/json" {
 		response.WriteJSON(w, map[string]interface{}{
@@ -202,7 +219,16 @@ func (s *Service) passwordResetUpdatePassword(r *http.Request) error {
 		return err
 	}
 
+	if !user.EmailConfirmed {
+		err = s.oauthService.ConfirmUserEmail(user.Username)
+
+		if err != nil {
+			return err
+		}
+	}
+
 	softDelete := true
+
 	err = s.oauthService.DeleteEmailToken(emailToken, softDelete)
 
 	if err != nil {

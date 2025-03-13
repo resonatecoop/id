@@ -4,7 +4,30 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"sort"
+
+	"github.com/pariz/gountries"
 )
+
+func getCountryList() []Country {
+	q := gountries.New()
+	countries := q.FindAllCountries()
+
+	var countryList []Country
+
+	for i := range countries {
+		countryList = append(countryList, Country{
+			Name: countries[i].Name.Common,
+			Code: countries[i].Codes.Alpha2,
+		})
+	}
+
+	sort.Slice(countryList, func(i, j int) bool {
+		return countryList[i].Name < countryList[j].Name
+	})
+
+	return countryList
+}
 
 // Redirects to a new path while keeping current request's query string
 func redirectWithQueryString(to string, query url.Values, w http.ResponseWriter, r *http.Request) {

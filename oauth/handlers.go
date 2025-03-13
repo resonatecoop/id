@@ -27,9 +27,9 @@ func (s *Service) tokensHandler(w http.ResponseWriter, r *http.Request) {
 	// Map of grant types against handler functions
 	grantTypes := map[string]func(r *http.Request, client *model.Client) (*AccessTokenResponse, error){
 		"authorization_code": s.authorizationCodeGrant,
-		"password":           s.passwordGrant,
-		"client_credentials": s.clientCredentialsGrant,
-		"refresh_token":      s.refreshTokenGrant,
+		// "password":           s.passwordGrant,
+		// "client_credentials": s.clientCredentialsGrant,
+		"refresh_token": s.refreshTokenGrant,
 	}
 
 	// Check the grant type
