@@ -7,8 +7,8 @@
     "build": "./node_modules/.bin/esbuild assets/js/main.js --bundle --outfile=public/js/main.js",
     "build:js:minify": "./node_modules/.bin/esbuild assets/js/main.js --minify --bundle --outfile=public/js/main.min.js",
     "build:js": "./node_modules/.bin/esbuild assets/js/main.js --bundle --outfile=public/js/main.js",
-    "build:css": "postcss assets/css/main.css -o public/css/main.min.css",
-    "watch:css": "postcss --watch assets/css/main.css -o public/css/main.min.css",
+    "build:css": "postcss assets/css/main.css -o public/css/main.css",
+    "watch:css": "postcss --watch assets/css/main.css -o public/css/main.css",
     "watch:js": "./node_modules/.bin/esbuild assets/js/main.js --bundle --outdir=./public/js --watch --servedir=./public --keyfile=your.key --certfile=your.cert"
   },
   "keywords": [
@@ -25,6 +25,7 @@
     "postcss-preset-env": "^8.0.1"
   },
   "dependencies": {
+    "@resonate/tachyons": "^1.3.4",
     "alpinejs": "^3.13.3",
     "browser-cookies": "^1.2.0",
     "validator": "^12.0.0",

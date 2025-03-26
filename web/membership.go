@@ -247,6 +247,7 @@ func (s *Service) membershipForm(w http.ResponseWriter, r *http.Request) {
 
 	RenderMembership(
 		s.cnf.IsDevelopment,
+		s.cnf.Version,
 		r.URL.Path,
 		getQueryString(query),
 		string(csrf.TemplateField(r)),

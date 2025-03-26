@@ -31,7 +31,7 @@ func (s *Service) profileForm(w http.ResponseWriter, r *http.Request) {
 
 	err = sessionService.SetFlashMessage(&session.Flash{
 		Type:    "Info",
-		Message: "Profile form is disabled",
+		Message: "The artist profile form is currently disabled. Contact us if you need to update your data.",
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

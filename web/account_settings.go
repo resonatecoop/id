@@ -49,6 +49,7 @@ func (s *Service) accountSettingsForm(w http.ResponseWriter, r *http.Request) {
 
 	AccountSettings(
 		s.cnf.IsDevelopment,
+		s.cnf.Version,
 		r.URL.Path,
 		getQueryString(query),
 		string(csrf.TemplateField(r)),

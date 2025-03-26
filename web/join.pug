@@ -7,6 +7,7 @@ block content
   :go:func
     Join(
       isDevelopment bool,
+      version,
       path,
       query,
       csrfField,
@@ -24,16 +25,17 @@ block content
 
   .flex.pb6
     .flex.flex-column.justify-center.items-center.w-100.min-vh-100
-      .flex.flex-column.flex-auto.pt4.ph3.ph0-l
+      .flex.flex-column.flex-auto.mt4.pt4.ph3.ph0-l
         p.lh-copy.f4
           | We are currently pausing new signups in order to work on our system.
         p.lh-copy.f4
           | To find out more, please visit the forums at&nbsp;
           a(href='https://community.resonate.coop') community.resonate.coop
+          | .
         p.lh-copy.f4
           | If you do have an account, you can&nbsp;
-          a(href='/login') log in&nbsp;
-          | to update your account details.
+          a(href='/login') log in
+          | &nbsp;to update your account details.
 
 block footer
   include footer

@@ -1,8 +1,10 @@
-header#header.bg-white.black.bg-white--light.black--light.bg-black--dark.white--dark.white.fixed.sticky-l.left-0.top-0-l.bottom-0.right-0.w-100.z-9999.flex.items-center.bt.bt-0-l.bb-l.bw.b--mid-gray.b--mid-gray--light.b--near-black--dark(role='banner' style='height:3rem;height:calc(3rem - 1px);')
+header#header.bg-white.black.bg-white--light.black--light.bg-black--dark.white--dark.fixed.sticky-l.left-0.top-0-l.bottom-0.right-0.w-100.z-9999.flex.items-center.bt.bt-0-l.bb-l.bw.b--mid-gray.b--mid-gray--light.b--near-black--dark(role='banner' style='height:3rem;height:calc(3rem - 1px);')
   h1.ma0.pa0.h-100
     a.link.flex.items-center.flex-shrink-0.h-100.ph2.ml2.overflow-hidden(href='/' title='Resonate')
-      svg.icon.icon-logo-wordmark.icon--sm(viewBox='0 0 16 16')
+      svg.icon.icon-logo-wordmark.icon--sm.icon--dn.icon--dib-ns(viewBox='0 0 16 16')
         use(xlink:href='#icon-logo-wordmark')
+      svg.icon.icon-logo.icon--sm.icon--db.icon--dn-ns(viewBox='0 0 16 16')
+        use(xlink:href='#icon-logo')
   nav.flex-l.flex-auto-l.w-50-l.relative.dropdown-navigation--focus(role='navigation' aria-label='Main navigation')
     ul.list.ma0.pa0.bg-white.bg-white--light.bg-black--dark.bg-transparent-l.fixed.w-100.top-0.left-0.flex.flex-auto.w-100.relative-l.flex-l.bb.bb-0-l.bw.b--mid-gray.b--mid-gray--light.b--near-black--dark(role='menu' style='height: 3rem;')
       li#learn(tabindex='0' role='menuitem')
@@ -54,17 +56,17 @@ header#header.bg-white.black.bg-white--light.black--light.bg-black--dark.white--
   nav.dropdown-navigation.flex.w-100.w-50-l.flex-auto.justify-end-l(role='navigation' aria-label='Player navigation')
     ul.flex.list.ma0.pa0.w-100.w-75-l.justify-around.items-center.mr3-l(role='menu')
       li.flex.flex-auto.w-100.justify-center.relative(role='menuitem')
-        a.db.link.near-black.near-black--light.near-white--dark.pv2.ph3(href='https://stream.resonate.coop/artists') Browse
+        a.db.link.near-black.near-black--light.near-white--dark.pv2.ph2.ph3-ns(href='https://stream.resonate.coop/artists') Browse
       li.flex.flex-auto.w-100.justify-center.relative(role='menuitem')
-        a.link.db.near-black.near-black--light.near-white--dark.pv2.ph3(href='https://stream.resonate.coop/discover') Discover
+        a.link.db.near-black.near-black--light.near-white--dark.pv2.ph2.ph3-ns(href='https://stream.resonate.coop/discover') Discover
       if state.Token != ""
         li.flex.flex-auto.w-100.justify-center.relative(role='menuitem')
-          a.link.db.near-black.near-black--light.near-white--dark.pv2.ph3(href='https://stream.resonate.coop/u/' + fmt.Sprint(profile.LegacyID) + '/library/favorites') Library
+          a.link.db.near-black.near-black--light.near-white--dark.pv2.ph2.ph3-ns(href='https://stream.resonate.coop/u/' + fmt.Sprint(profile.LegacyID) + '/library/favorites') Library
       else
         li(role='divider' class='flex flex-auto w-100 justify-center')
       li.flex.flex-auto.justify-center.w-100.mw4(role='menuitem')
         if state.Token == ""
-          a(href='/login?login_redirect_uri=%2Fweb%2Faccount' class='link pv1 ph3 ttu ba b--mid-gray b--dark-gray--dark db f6 b') Log In
+          a(href='/login?login_redirect_uri=%2Fweb%2Faccount' class='link pv1 ph3 ttu ba color-inherit b--mid-gray b--dark-gray--dark db f6 b') Log In
         else
           button.bg-transparent.bn.dropdown-toggle.w-100.pa2.grow(title='Open menu')
             span.flex.justify-center.items-center
@@ -98,6 +100,8 @@ header#header.bg-white.black.bg-white--light.black--light.bg-black--dark.white--
               a.link.db.pv2.pl3(href='../web/profile' + query) Profile
             li.mb1(role='menuitem')
               a.link.db.pv2.pl3(href='../web/account' + query) Update your account
+            li.mb1(role='menuitem')
+              a.link.db.pv2.pl3(href='../web/membership' + query) Membership
             li.mb1(role='menuitem')
               a.link.db.pv2.pl3(href='../web/account-settings' + query) Account settings
             li.mb1(role='menuitem')

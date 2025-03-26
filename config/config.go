@@ -80,6 +80,7 @@ type UserAPIConfig struct {
 // Config stores all configuration options
 type Config struct {
 	Hostname            string
+	Version             string // versioning for static assets
 	CSRF                CSRFConfig
 	Mailgun             MailgunConfig
 	Database            DatabaseConfig

@@ -18,6 +18,7 @@ func (s *Service) indexForm(w http.ResponseWriter, r *http.Request) {
 
 	Index(
 		s.cnf.IsDevelopment,
+		s.cnf.Version,
 		r.URL.Path,
 		getQueryString(query),
 		string(csrf.TemplateField(r)),

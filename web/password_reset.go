@@ -77,6 +77,7 @@ func (s *Service) passwordResetForm(w http.ResponseWriter, r *http.Request) {
 
 		PasswordResetUpdatePassword(
 			s.cnf.IsDevelopment,
+			s.cnf.Version,
 			r.URL.Path,
 			getQueryString(query),
 			string(csrf.TemplateField(r)),
@@ -103,6 +104,7 @@ func (s *Service) passwordResetForm(w http.ResponseWriter, r *http.Request) {
 
 	PasswordReset(
 		s.cnf.IsDevelopment,
+		s.cnf.Version,
 		r.URL.Path,
 		getQueryString(query),
 		string(csrf.TemplateField(r)),

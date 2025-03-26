@@ -82,6 +82,7 @@ func (s *Service) authorizeForm(w http.ResponseWriter, r *http.Request) {
 
 	Authorize(
 		s.cnf.IsDevelopment,
+		s.cnf.Version,
 		r.URL.Path,
 		getQueryString(query),
 		string(csrf.TemplateField(r)),

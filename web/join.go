@@ -51,6 +51,7 @@ func (s *Service) joinForm(w http.ResponseWriter, r *http.Request) {
 
 	Join(
 		s.cnf.IsDevelopment,
+		s.cnf.Version,
 		r.URL.Path,
 		getQueryString(query),
 		string(csrf.TemplateField(r)),
