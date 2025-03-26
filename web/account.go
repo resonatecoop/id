@@ -61,6 +61,7 @@ func (s *Service) accountForm(w http.ResponseWriter, r *http.Request) {
 
 	Account(
 		s.cnf.IsDevelopment,
+		s.cnf.Version,
 		r.URL.Path,
 		getQueryString(query),
 		string(csrf.TemplateField(r)),

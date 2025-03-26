@@ -39,6 +39,7 @@ func (s *Service) loginForm(w http.ResponseWriter, r *http.Request) {
 
 	Login(
 		s.cnf.IsDevelopment,
+		s.cnf.Version,
 		r.URL.Path,
 		getQueryString(query),
 		string(csrf.TemplateField(r)),

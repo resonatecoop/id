@@ -11,6 +11,7 @@ func (s *Service) contactForm(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	Contact(
 		s.cnf.IsDevelopment,
+		s.cnf.Version,
 		r.URL.Path,
 		getQueryString(r.URL.Query()),
 		"",
