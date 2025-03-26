@@ -1,5 +1,6 @@
 {
   "Hostname": "id.resonate.localhost",
+  "Version":"1.2.0-0",
   "Clients": [
     {
       "ConnectUrl": "https://stream.resonate.localhost/api/v3/user/connect/resonate",
