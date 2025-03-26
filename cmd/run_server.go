@@ -50,6 +50,10 @@ func RunServer(configBackend string) error {
 	services.OauthService.RegisterRoutes(router, "/v1/oauth")
 
 	webRoutes := mux.NewRouter()
+
+	// Serve static files under ../public
+	webRoutes.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("../public/"))))
+
 	services.WebService.RegisterRoutes(webRoutes, "/web")
 
 	CSRF := csrf.Protect(
