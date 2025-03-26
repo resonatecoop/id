@@ -10,7 +10,6 @@ module.exports = {
         },
         'nesting-rules': true
       }
-    }),
-    require('postcss-minify')()
+    })
   ]
 }
