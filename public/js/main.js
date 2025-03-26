@@ -25,9 +25,9 @@
     mod
   ));
 
-  // assets/js/validate-formdata.js
-  var require_validate_formdata = __commonJS({
-    "assets/js/validate-formdata.js"(exports, module) {
+  // assets/js/lib/validateFormdata.js
+  var require_validateFormdata = __commonJS({
+    "assets/js/lib/validateFormdata.js"(exports, module) {
       module.exports = ValidateFormdata;
       function ValidateFormdata() {
         if (!(this instanceof ValidateFormdata))
@@ -336,7 +336,20 @@
           });
           return parts[3] <= 255;
         } else if (version === "6") {
-          var blocks = str.split(":");
+          var addressAndZone = [str];
+          if (str.includes("%")) {
+            addressAndZone = str.split("%");
+            if (addressAndZone.length !== 2) {
+              return false;
+            }
+            if (!addressAndZone[0].includes(":")) {
+              return false;
+            }
+            if (addressAndZone[1] === "") {
+              return false;
+            }
+          }
+          var blocks = addressAndZone[0].split(":");
           var foundOmissionBlock = false;
           var foundIPv4TransitionBlock = isIP(blocks[blocks.length - 1], 4);
           var expectedNumberOfBlocks = foundIPv4TransitionBlock ? 7 : 8;
@@ -569,6 +582,107 @@
       }
       module.exports = exports.default;
       module.exports.default = exports.default;
+    }
+  });
+
+  // node_modules/zxcvbn-async/index.js
+  var require_zxcvbn_async = __commonJS({
+    "node_modules/zxcvbn-async/index.js"(exports, module) {
+      var debug = console.debug || console.log;
+      module.exports = {
+        load: function(_options, callback) {
+          var options = Object.assign({
+            sync: false,
+            libUrl: "https://cdnjs.cloudflare.com/ajax/libs/zxcvbn/4.4.2/zxcvbn.js",
+            libIntegrity: "sha384-jhGcGHNZytnBnH1wbEM3KxJYyRDy9Q0QLKjE65xk+aMqXFCdvFuYIjzMWAAWBBtR"
+          }, _options);
+          if (options.sync) {
+            return syncMode(options);
+          } else {
+            return asyncMode(options, callback);
+          }
+        }
+      };
+      var LOAD_SUCCESS = 1;
+      var LOAD_ERROR = -1;
+      var hasLoaded = false;
+      var loadResult = 0;
+      function addScriptTag(url, integrity, loadCallback, errorCallback) {
+        if (!hasLoaded) {
+          hasLoaded = true;
+          var head = global.document.getElementsByTagName("head")[0];
+          var script = global.document.createElement("script");
+          script.type = "text/javascript";
+          if (integrity) {
+            script.integrity = integrity;
+            script.crossOrigin = "anonymous";
+          }
+          script.async = true;
+          script.onload = function() {
+            loadResult = LOAD_SUCCESS;
+            loadCallback();
+          };
+          script.onerror = function() {
+            loadResult = LOAD_ERROR;
+            errorCallback();
+          };
+          script.src = url;
+          head.appendChild(script);
+        } else {
+          if (loadResult === LOAD_SUCCESS) {
+            loadCallback();
+          } else if (loadResult === LOAD_ERROR) {
+            errorCallback();
+          }
+        }
+      }
+      var library = null;
+      function syncMode(options) {
+        addScriptTag(options.libUrl, options.libIntegrity, function() {
+          debug("zxcvbn loaded");
+          library = global.zxcvbn;
+        }, function() {
+          console.error(new Error("Cannot load zxcvbn"));
+        });
+        return function(password, user_inputs) {
+          if (library) {
+            return library(password, user_inputs);
+          } else {
+            return {
+              password,
+              user_inputs,
+              guesses: -1,
+              guesses_log10: -1,
+              crack_times_seconds: -1,
+              crack_times_display: -1,
+              score: -1,
+              feedback: {
+                suggestions: [],
+                warning: ""
+              },
+              sequence: [],
+              calc_time: 0
+            };
+          }
+        };
+      }
+      function asyncMode(options, callback) {
+        if (typeof callback === "function") {
+          addScriptTag(options.libUrl, options.libIntegrity, function() {
+            callback(null, global.zxcvbn);
+          }, function() {
+            callback(new Error("Cannot load zxcvbn"));
+          });
+        } else {
+          return new Promise(function(resolve, reject) {
+            addScriptTag(options.libUrl, options.libIntegrity, function() {
+              resolve(global.zxcvbn);
+            }, function() {
+              reject(new Error("Cannot load zxcvbn"));
+            });
+          });
+        }
+      }
     }
   });
 
@@ -3784,15 +3898,77 @@ ${expression ? 'Expression: "' + expression + '"\n\n' : ""}`, el);
   var src_default = alpine_default;
   var module_default = src_default;
 
-  // assets/js/form.js
-  var import_validate_formdata = __toESM(require_validate_formdata());
+  // assets/js/components/form.js
+  var import_validateFormdata = __toESM(require_validateFormdata());
   var import_isEmail = __toESM(require_isEmail());
   var import_isEmpty = __toESM(require_isEmpty());
+  var import_zxcvbn_async = __toESM(require_zxcvbn_async());
   var form = () => ({
     loading: false,
     response: null,
+    action: "",
+    method: "POST",
+    validator: (0, import_validateFormdata.default)(),
+    valid: true,
+    errors: [],
+    error: "",
+    validate(event) {
+      this.validator.validate(event.target.name, event.target.value);
+    },
+    async submit(event) {
+      this.response = null;
+      this.errors = [];
+      const formData = new FormData(event.target);
+      formData.forEach((value, key) => {
+        const shouldValidate = typeof this.validator.validators[key] === "function";
+        if (shouldValidate) {
+          this.validator.validate(key, value);
+        }
+      });
+      if (!this.validator.state.valid) {
+        for (const [key, value] of Object.entries(this.validator.state.errors)) {
+          if (value) {
+            this.errors.push({ name: key, message: value.message });
+          }
+        }
+        return;
+      }
+      this.loading = true;
+      this.errors = [];
+      const values = this.validator.state.values;
+      try {
+        const response = await fetch("", {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            Accept: "application/json",
+            "X-CSRF-Token": values["gorilla.csrf.Token"],
+            Pragma: "no-cache",
+            "Cache-Control": "no-cache"
+          },
+          body: new URLSearchParams(values)
+        });
+        const isRedirected = response.redirected;
+        if (isRedirected) {
+          window.location.href = response.url;
+        }
+        const status = response.status;
+        const contentType = response.headers.get("content-type");
+        const { error: error2 } = await response.json();
+        this.error = error2;
+        console.log(status);
+        console.log(contentType);
+      } catch (err) {
+        console.log(err);
+      } finally {
+        this.loading = false;
+      }
+      console.log(formData);
+      this.loading = false;
+    }
+  });
+  var loginForm = () => Object.assign({}, form(), {
     init() {
-      this.validator = (0, import_validate_formdata.default)();
       this.validator.field("email", (data2) => {
         if ((0, import_isEmpty.default)(data2))
           return new Error("Email is required");
@@ -3803,29 +3979,70 @@ ${expression ? 'Expression: "' + expression + '"\n\n' : ""}`, el);
         if ((0, import_isEmpty.default)(data2))
           return new Error("Password is required");
       });
-    },
-    async submit(event) {
-      this.loading = true;
-      this.response = null;
-      const formData = new FormData(event.target);
-      const payload = {};
-      formData.forEach((value, key) => {
-        payload[key] = value;
+      this.validator.field("gorilla.csrf.Token", (data2) => {
+        if ((0, import_isEmpty.default)(data2))
+          return new Error("Csrf missing");
       });
-      console.log(payload);
-      this.validator.validate(payload);
-      console.log(formData);
-      this.loading = false;
     }
   });
 
-  // assets/js/input.js
+  // assets/js/components/input.js
   var input = () => ({
     error: null,
     validate() {
       if (!this.response?.errors?.[this.$el.name])
         return this.error = null;
       this.error = this.response.errors[this.$el.name];
+    }
+  });
+
+  // assets/js/components/search.js
+  var search = () => ({
+    tags: [
+      "ambient",
+      "acoustic",
+      "alternative",
+      "chill",
+      "dream-pop",
+      "electro",
+      "electronic",
+      "experimental",
+      "folk",
+      "funk",
+      "hiphop",
+      "house",
+      "indie-pop",
+      "indie-rock",
+      "instrumental",
+      "jazz",
+      "metal",
+      "podcasts",
+      "pop",
+      "punk",
+      "reggae"
+    ],
+    query: "",
+    open: true,
+    init() {
+      this.$watch("open", () => {
+        if (this.open) {
+          this.$nextTick(() => this.$refs.input.focus());
+        }
+      });
+    },
+    submit(event) {
+      const q = event.target.search.value;
+      if (!q)
+        return false;
+      if (q.length < 3)
+        return false;
+      const bang = q.startsWith("#");
+      const pathname = bang ? "/tag" : "/search";
+      const url = new URL(pathname, this.$store.app.state.appURL || "http://localhost");
+      const params = bang ? { term: q.split("#")[1] } : { q };
+      url.search = new URLSearchParams(params);
+      window.open(url.href, "_blank");
+      return false;
     }
   });
 
@@ -3842,7 +4059,23 @@ ${expression ? 'Expression: "' + expression + '"\n\n' : ""}`, el);
     });
   });
   document.addEventListener("alpine:init", () => {
-    module_default.data("form", form);
+    module_default.store("darkMode", {
+      on: false,
+      toggle() {
+        this.on = !this.on;
+      },
+      init() {
+        this.on = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      }
+    });
+    module_default.store("app", {
+      init() {
+        this.state = Object.assign({}, window.initialState);
+        delete window.initialState;
+      }
+    });
+    module_default.data("loginForm", loginForm);
+    module_default.data("search", search);
     module_default.data("input", input);
   });
   window.Alpine = module_default;
