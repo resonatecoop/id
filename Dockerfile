@@ -1,6 +1,9 @@
+ARG RELEASE_TAG=develop
 ARG STATIC_DIR=public
 
 FROM golang:alpine as builder
+
+ARG RELEASE_TAG
 
 RUN apk update && apk add --no-cache git make ca-certificates tzdata && update-ca-certificates
 
