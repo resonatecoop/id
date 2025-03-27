@@ -1,4 +1,5 @@
-ARG RELEASE_TAG=develop 
+ARG RELEASE_TAG=develop
+ARG STATIC_DIR=public
 
 FROM golang:alpine as builder
 
@@ -34,9 +35,11 @@ RUN make generate
 # Build the binary
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
     -ldflags='-w -s -extldflags "-static"' -a \
-    -o /go/bin/id .
+    -o $GOPATH/bin/id .
 
 FROM scratch
+
+ARG STATIC_DIR
 
 # Import from builder.
 COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
@@ -45,6 +48,7 @@ COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/group /etc/group
 
 COPY --from=builder /go/bin/id /go/bin/id
+COPY --from=builder /go/src/resonatecoop/id/public ${STATIC_DIR}
 
 # Use an unprivileged user.
 USER appuser:appuser

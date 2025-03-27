@@ -11,6 +11,7 @@ import (
 var (
 	cliApp        *cli.App
 	configBackend string
+	staticDir     string
 )
 
 func init() {
@@ -27,6 +28,11 @@ func init() {
 			Value:       "etcd",
 			Destination: &configBackend,
 		},
+		cli.StringFlag{
+			Name:        "staticDir",
+			Value:       "public",
+			Destination: &staticDir,
+		},
 	}
 }
 
@@ -37,7 +43,7 @@ func main() {
 			Name:  "runserver",
 			Usage: "run web server",
 			Action: func(c *cli.Context) error {
-				return cmd.RunServer(configBackend)
+				return cmd.RunServer(configBackend, staticDir)
 			},
 		},
 	}
