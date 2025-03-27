@@ -15,7 +15,7 @@ import (
 )
 
 // RunServer runs the app
-func RunServer(configBackend string) error {
+func RunServer(configBackend, staticDir string) error {
 	cnf, db, err := initConfigDB(true, true, configBackend)
 	if err != nil {
 		return err
@@ -40,7 +40,7 @@ func RunServer(configBackend string) error {
 	app.Use(negroni.NewLogger())
 	app.Use(gzip.Gzip(gzip.DefaultCompression))
 	app.Use(negroni.HandlerFunc(secureMiddleware.HandlerFuncWithNext))
-	app.Use(negroni.NewStatic(http.Dir("public")))
+	app.Use(negroni.NewStatic(http.Dir(staticDir)))
 
 	// Create a router instance
 	router := mux.NewRouter()
@@ -50,9 +50,6 @@ func RunServer(configBackend string) error {
 	services.OauthService.RegisterRoutes(router, "/v1/oauth")
 
 	webRoutes := mux.NewRouter()
-
-	// Serve static files under ../public
-	webRoutes.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("../public/"))))
 
 	services.WebService.RegisterRoutes(webRoutes, "/web")
 
